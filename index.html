@@ -689,67 +689,208 @@ ${filtered.length===0?`
 </div>`;
 }
 
+// ── QUICK STATUS (keHoach) ──
+function quickStatus(id, newStatus){
+  const o = orders.find(o=>o.id===id);
+  if(!o) return;
+  o.status = newStatus;
+  updateBadges();
+  showToast({wait:'⏳ Chờ SX',running:'🔄 Đang SX',done:'✅ Xong'}[newStatus]);
+  renderTab('keHoach');
+}
+function resetKHFilter(){ filterStatus='all'; filterPriority='all'; renderTab('keHoach'); }
+
 // ── KẾ HOẠCH SX ──
 function renderKeHoach(){
   const active = orders.filter(o=>!o.completed);
   let filtered = active;
   if(searchQ) filtered = filtered.filter(o=>
-    o.customer.toLowerCase().includes(searchQ)||specStr(o).toLowerCase().includes(searchQ)
+    o.customer.toLowerCase().includes(searchQ)||
+    (o.po+'').toLowerCase().includes(searchQ)||
+    specStr(o).toLowerCase().includes(searchQ)||
+    (o.material||'').toLowerCase().includes(searchQ)||
+    (o.type||'').toLowerCase().includes(searchQ)
   );
+  if(filterStatus!=='all') filtered = filtered.filter(o=>o.status===filterStatus);
   if(filterPriority!=='all') filtered = filtered.filter(o=>o.priority===filterPriority);
-  filtered.sort((a,b)=>a.priority.localeCompare(b.priority));
+  filtered.sort((a,b)=>{
+    const pa=parseInt(a.priority.replace('GẤP ',''))||9;
+    const pb=parseInt(b.priority.replace('GẤP ',''))||9;
+    return pa!==pb ? pa-pb : a.customer.localeCompare(b.customer);
+  });
 
-  const priorities = ['GẤP 1','GẤP 2','GẤP 3','GẤP 4','GẤP 5','GẤP 6','GẤP 7','GẤP 8'];
-  const activePrios = priorities.filter(p=>active.some(o=>o.priority===p));
+  const priorities=['GẤP 1','GẤP 2','GẤP 3','GẤP 4','GẤP 5','GẤP 6','GẤP 7','GẤP 8'];
+  const activePrios=priorities.filter(p=>active.some(o=>o.priority===p));
+  const cntAll=active.length,cntWait=active.filter(o=>o.status==='wait').length,
+        cntRun=active.filter(o=>o.status==='running').length,cntDone=active.filter(o=>o.status==='done').length;
+  const totalKgA=active.reduce((s,o)=>s+(o.kg||0),0);
+  const doneKgA=active.filter(o=>o.status==='done').reduce((s,o)=>s+(o.kg||0),0);
+  const pctKg=totalKgA>0?Math.round(doneKgA/totalKgA*100):0;
+
+  // group by customer+priority
+  const gmap={};
+  filtered.forEach(o=>{
+    const k=o.customer+'|'+o.priority;
+    if(!gmap[k]) gmap[k]={customer:o.customer,priority:o.priority,items:[]};
+    gmap[k].items.push(o);
+  });
+  const groups=Object.values(gmap).sort((a,b)=>{
+    const pa=parseInt(a.priority.replace('GẤP ','')||9);
+    const pb=parseInt(b.priority.replace('GẤP ','')||9);
+    return pa-pb;
+  });
+
+  const prioC=['','#7c3aed','#1d4ed8','#0369a1','#0f766e','#b45309','#b45309','#b45309','#b45309'];
+  const prioB=['','#ede9fe','#dbeafe','#e0f2fe','#ccfbf1','#fef3c7','#fef3c7','#fef3c7','#fef3c7'];
+
+  function matBadge(m){
+    if(!m) return '';
+    const cm={'A':'#0369a1|#e0f2fe','B*':'#7c3aed|#ede9fe'};
+    const [fg,bg]=(cm[m]||'#374151|#f3f4f6').split('|');
+    return `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:${bg};color:${fg}">${m}</span>`;
+  }
+  function typBadge(t){
+    if(!t) return '';
+    return `<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:#f0fdf4;color:#166534;font-weight:600">${t}</span>`;
+  }
+  function sBtn(o){
+    const sc={wait:'#fef3c7|#92400e',running:'#dbeafe|#1e40af',done:'#d1fae5|#065f46'};
+    const sl={wait:'⏳ Chờ SX',running:'🔄 Đang SX',done:'✅ Xong'};
+    return ['wait','running','done'].map(v=>{
+      const [bg,fg]=sc[v].split('|');
+      const active=o.status===v;
+      return `<button onclick="quickStatus(${o.id},'${v}')"
+        style="flex:1;padding:7px 0;border-radius:8px;border:2px solid ${active?fg:'#e5e7eb'};
+        background:${active?bg:'#f9fafb'};color:${active?fg:'#9ca3af'};font-size:11px;
+        font-weight:${active?700:500};cursor:pointer;white-space:nowrap;transition:all .1s">${sl[v]}</button>`;
+    }).join('');
+  }
 
   return `
-<div class="search-bar">
+<div class="search-bar" style="padding-bottom:0">
   <div class="search-input-wrap">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input class="search-input" placeholder="Tìm khách hàng, kích thước..." oninput="handleSearch(this.value)" value="${searchQ}">
+    <input class="search-input" placeholder="Tìm KH, PO, quy cách, NL, chủng loại..." oninput="handleSearch(this.value)" value="${searchQ}">
   </div>
-  <div class="filter-chips">
-    <div class="chip ${filterPriority==='all'?'active':''}" onclick="handleFilterPriority('all')">Tất cả</div>
+  <div class="filter-chips" style="padding-bottom:10px">
+    <div class="chip ${filterStatus==='all'&&filterPriority==='all'?'active':''}" onclick="resetKHFilter()">Tất cả (${cntAll})</div>
+    <div class="chip ${filterStatus==='running'?'active':''}" onclick="handleFilterStatus('running')">🔄 Đang SX (${cntRun})</div>
+    <div class="chip ${filterStatus==='wait'?'active':''}" onclick="handleFilterStatus('wait')">⏳ Chờ (${cntWait})</div>
+    <div class="chip ${filterStatus==='done'?'active':''}" onclick="handleFilterStatus('done')">✅ Xong (${cntDone})</div>
+    <div style="width:1px;background:var(--gray-border);flex-shrink:0;margin:0 2px;align-self:stretch"></div>
     ${activePrios.map(p=>`<div class="chip ${filterPriority===p?'active':''}" onclick="handleFilterPriority('${p}')">${p}</div>`).join('')}
   </div>
 </div>
-<div style="height:8px"></div>
-<div class="plan-table-wrap">
-<table class="plan-table">
-<thead>
-<tr>
-  <th style="width:30px">#</th>
-  <th>Khách hàng</th>
-  <th>Kích thước</th>
-  <th>Thanh</th>
-  <th>KG</th>
-  <th>Ưu tiên</th>
-  <th>Trạng thái</th>
-</tr>
-</thead>
-<tbody>
-${filtered.length===0?`<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:32px">Không có dữ liệu</td></tr>`:''}
-${filtered.map((o,i)=>`
-<tr>
-  <td style="color:var(--text3);font-size:11px">${i+1}</td>
-  <td><div style="font-size:13px;font-weight:500">${o.customer}</div><div style="font-size:10px;color:var(--text3)">PO: ${o.po||'—'}</div></td>
-  <td style="font-size:12px;color:var(--text2)">${o.thick}×${o.width}×${o.len}</td>
-  <td style="font-size:12px;text-align:right">${o.qty}</td>
-  <td style="font-size:12px;text-align:right">${o.kg>0?o.kg.toFixed(1):'—'}</td>
-  <td><span class="badge ${prioClass(o.priority)}" style="font-size:10px;padding:2px 6px">${o.priority}</span></td>
-  <td>
-    <select class="status-select ${o.status}" onchange="updateStatus(${o.id},this.value,this)">
-      <option value="wait" ${o.status==='wait'?'selected':''}>⏳ Chờ</option>
-      <option value="running" ${o.status==='running'?'selected':''}>🔄 Đang SX</option>
-      <option value="done" ${o.status==='done'?'selected':''}>✅ Xong</option>
-    </select>
-  </td>
-</tr>`).join('')}
-</tbody>
-</table>
+
+<div style="display:flex;gap:0;background:#fff;border-bottom:1px solid var(--gray-border);padding:10px 16px;align-items:center">
+  <div style="flex:1;text-align:center;border-right:1px solid var(--gray-border)">
+    <div style="font-size:18px;font-weight:700;color:var(--blue);line-height:1">${cntAll}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:1px">Tổng cỡ</div>
+  </div>
+  <div style="flex:1;text-align:center;border-right:1px solid var(--gray-border)">
+    <div style="font-size:18px;font-weight:700;color:#c27803;line-height:1">${cntRun}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:1px">Đang SX</div>
+  </div>
+  <div style="flex:1;text-align:center;border-right:1px solid var(--gray-border)">
+    <div style="font-size:18px;font-weight:700;color:var(--green);line-height:1">${cntDone}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:1px">Xong</div>
+  </div>
+  <div style="flex:2;padding-left:12px">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px">
+      <span>Tiến độ KG</span><span style="font-weight:700;color:var(--green)">${pctKg}%</span>
+    </div>
+    <div style="background:var(--gray-border);border-radius:4px;height:6px;overflow:hidden">
+      <div style="height:100%;border-radius:4px;background:var(--green);width:${pctKg}%"></div>
+    </div>
+    <div style="font-size:9px;color:var(--text3);margin-top:3px">${doneKgA.toLocaleString('vi-VN',{maximumFractionDigits:0})} / ${totalKgA.toLocaleString('vi-VN',{maximumFractionDigits:0})} kg</div>
+  </div>
 </div>
-<div style="height:16px"></div>`;
+
+<div style="padding:12px 16px 80px">
+${filtered.length===0?`<div class="empty-state" style="padding-top:60px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+  <h3>Không tìm thấy</h3><p>Thử bỏ bộ lọc hoặc tìm từ khóa khác.</p></div>`:''}
+${groups.map(g=>{
+  const gDone=g.items.filter(o=>o.status==='done').length;
+  const gRun=g.items.filter(o=>o.status==='running').length;
+  const gKg=g.items.reduce((s,o)=>s+(o.kg||0),0);
+  const gDKg=g.items.filter(o=>o.status==='done').reduce((s,o)=>s+(o.kg||0),0);
+  const gQty=g.items.reduce((s,o)=>s+o.qty,0);
+  const gPct=g.items.length>0?Math.round(gDone/g.items.length*100):0;
+  const pn=parseInt(g.priority.replace('GẤP ','')||9);
+  const pc=prioC[pn]||'#374151', pb=prioB[pn]||'#f3f4f6';
+  const lbColor={wait:'#f59e0b',running:'#3b82f6',done:'#10b981'};
+  return `
+<div style="margin-bottom:18px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span style="font-size:15px;font-weight:700;color:var(--text)">${g.customer}</span>
+      <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:${pb};color:${pc}">${g.priority}</span>
+      ${gRun>0?`<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:#dbeafe;color:#1e40af">▶ ${gRun} chạy</span>`:''}
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:13px;font-weight:700;color:${gPct===100?'var(--green)':'var(--text2)'}">${gPct}%</div>
+      <div style="font-size:10px;color:var(--text3)">${gDone}/${g.items.length} cỡ</div>
+    </div>
+  </div>
+  <div style="background:var(--gray-border);border-radius:3px;height:4px;overflow:hidden;margin-bottom:8px">
+    <div style="height:100%;border-radius:3px;background:${gPct===100?'var(--green)':pc};width:${gPct}%"></div>
+  </div>
+  <div style="background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);border:1px solid var(--gray-border)">
+    ${g.items.map((o,idx)=>{
+      const isLast=idx===g.items.length-1;
+      const sc={wait:'#fef3c7',running:'#eff6ff',done:'#f0fdf4'}[o.status];
+      const lb=lbColor[o.status];
+      return `
+      <div style="border-bottom:${isLast?'none':'1px solid var(--gray-border)'}">
+        <div style="padding:10px 12px 6px 14px;display:flex;gap:8px;align-items:flex-start;border-left:3px solid ${lb}">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:5px">
+              <span style="font-size:14px;font-weight:700;color:#1e293b;font-family:monospace">${o.thick}×${o.width}×${o.len} mm</span>
+              ${matBadge(o.material)}
+              ${typBadge(o.type)}
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <div>
+                <span style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px">Số thanh </span>
+                <span style="font-size:14px;font-weight:700;color:var(--text)">${o.qty.toLocaleString('vi-VN')}</span>
+              </div>
+              ${o.kg>0?`<div>
+                <span style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px">KG </span>
+                <span style="font-size:14px;font-weight:700;color:var(--blue)">${o.kg.toLocaleString('vi-VN',{maximumFractionDigits:1})}</span>
+              </div>`:''}
+              ${o.po?`<div>
+                <span style="font-size:10px;color:var(--text3)">PO </span>
+                <span style="font-size:11px;font-weight:600;color:var(--text2)">${o.po}</span>
+              </div>`:''}
+            </div>
+            ${o.note?`<div style="margin-top:5px;font-size:11px;color:#92400e;background:#fef3c7;padding:3px 8px;border-radius:6px;display:inline-block">📝 ${o.note}</div>`:''}
+          </div>
+          <div style="padding-top:2px;flex-shrink:0">
+            <div style="padding:4px 10px;border-radius:20px;background:${sc};font-size:11px;font-weight:700;color:${{wait:'#92400e',running:'#1e40af',done:'#065f46'}[o.status]};white-space:nowrap">
+              ${{wait:'⏳ Chờ',running:'🔄 Đang SX',done:'✅ Xong'}[o.status]}
+            </div>
+          </div>
+        </div>
+        <div style="padding:6px 12px 10px 14px;display:flex;gap:6px;border-left:3px solid ${lb}">
+          ${sBtn(o)}
+        </div>
+      </div>`;
+    }).join('')}
+    <div style="padding:8px 14px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--gray-border)">
+      <span style="font-size:11px;color:var(--text3);font-weight:500">Tổng nhóm · ${g.items.length} cỡ</span>
+      <div style="display:flex;gap:10px">
+        <span style="font-size:11px;font-weight:600;color:var(--text2)">📦 ${gQty.toLocaleString('vi-VN')}</span>
+        <span style="font-size:11px;font-weight:600;color:var(--blue)">⚖️ ${gKg.toLocaleString('vi-VN',{maximumFractionDigits:0})} kg</span>
+        ${gDKg>0?`<span style="font-size:11px;font-weight:600;color:var(--green)">✅ ${gDKg.toLocaleString('vi-VN',{maximumFractionDigits:0})} kg</span>`:''}
+      </div>
+    </div>
+  </div>
+</div>`;
+}).join('')}
+</div>`;
 }
+
 
 // ── ĐƠN HOÀN THÀNH ──
 function renderHoanThanh(){

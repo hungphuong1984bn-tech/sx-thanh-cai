@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a56db">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SX Thanh Cái">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Quản Lý Sản Xuất Thanh Cái — Đông Phương</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --blue:#1a56db;--blue-dark:#1240a8;--blue-light:#e8f0fe;
+  --green:#057a55;--green-light:#def7ec;
+  --amber:#c27803;--amber-light:#fdf3cd;
+  --red:#c81e1e;--red-light:#fde8e8;
+  --gray:#6b7280;--gray-light:#f3f4f6;--gray-border:#e5e7eb;
+  --white:#ffffff;--text:#111827;--text2:#374151;--text3:#6b7280;
+  --radius:12px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,.12);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;color:var(--text);min-height:100vh;font-size:14px;overscroll-behavior:none}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ── LOGIN ── */
+#loginScreen{background:linear-gradient(160deg,#1240a8 0%,#1a56db 50%,#2563eb 100%);justify-content:center;align-items:center;padding:24px}
+.login-card{background:#fff;border-radius:20px;padding:32px 24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo .logo-icon{width:64px;height:64px;background:var(--blue-light);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px}
+.login-logo h1{font-size:18px;font-weight:700;color:var(--text)}
+.login-logo p{font-size:12px;color:var(--text3);margin-top:2px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select{width:100%;padding:12px 14px;border:1.5px solid var(--gray-border);border-radius:var(--radius-sm);font-size:15px;color:var(--text);background:#fff;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--blue)}
+.btn-primary{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-primary:active{background:var(--blue-dark)}
+.demo-hint{margin-top:16px;padding:12px;background:var(--gray-light);border-radius:var(--radius-sm);font-size:12px;color:var(--text3)}
+.demo-hint b{color:var(--text2)}
+
+/* ── TOP BAR ── */
+.topbar{background:var(--blue);color:#fff;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:56px;flex-shrink:0;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar h2{font-size:17px;font-weight:600}
+.topbar-subtitle{font-size:11px;opacity:.7}
+.avatar-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{background:#fff;border-top:1px solid var(--gray-border);display:flex;height:62px;flex-shrink:0;position:sticky;bottom:0;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--text3);transition:color .15s;font-size:10px;font-weight:500;padding:4px 0;position:relative}
+.nav-item.active{color:var(--blue)}
+.nav-item svg{width:22px;height:22px;stroke-width:1.8}
+.nav-badge{position:absolute;top:6px;right:18px;background:var(--red);color:#fff;border-radius:10px;font-size:9px;font-weight:700;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* ── SCROLL CONTENT ── */
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin:0 16px 12px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px}
+.section-header{padding:16px 16px 8px;font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px}
+
+/* ── STAT TILES ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px}
+.stat-tile{background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.stat-tile .label{font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:500}
+.stat-tile .value{font-size:24px;font-weight:700;color:var(--text);line-height:1}
+.stat-tile .sub{font-size:11px;color:var(--text3);margin-top:3px}
+.stat-tile.blue{background:var(--blue-light)}.stat-tile.blue .value{color:var(--blue)}
+.stat-tile.green{background:var(--green-light)}.stat-tile.green .value{color:var(--green)}
+.stat-tile.amber{background:var(--amber-light)}.stat-tile.amber .value{color:var(--amber)}
+.stat-tile.red{background:var(--red-light)}.stat-tile.red .value{color:var(--red)}
+
+/* ── STATUS BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-wait{background:#fef3c7;color:#92400e}
+.badge-running{background:#dbeafe;color:#1e40af}
+.badge-done{background:#d1fae5;color:#065f46}
+.badge-cancel{background:#f3f4f6;color:#6b7280}
+
+/* ── ORDER ROW ── */
+.order-list{padding:0 16px}
+.order-item{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
+.order-item-header{padding:12px 14px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.order-customer{font-size:15px;font-weight:600;color:var(--text)}
+.order-spec{font-size:12px;color:var(--text3);margin-top:2px}
+.order-meta{display:flex;gap:8px;padding:0 14px 12px;flex-wrap:wrap;align-items:center}
+.order-kg{font-size:12px;color:var(--text2);background:var(--gray-light);padding:3px 8px;border-radius:20px}
+.order-priority{font-size:11px;font-weight:600;color:#92400e;background:#fef3c7;padding:3px 8px;border-radius:20px}
+.order-actions{border-top:1px solid var(--gray-border);padding:8px 14px;display:flex;gap:8px}
+.action-btn{padding:6px 12px;border-radius:6px;border:1.5px solid var(--gray-border);font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--text2);transition:all .15s}
+.action-btn:active{background:var(--gray-light)}
+.action-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.action-btn.success{background:var(--green);color:#fff;border-color:var(--green)}
+.action-btn.danger{background:var(--red);color:#fff;border-color:var(--red);margin-left:auto}
+
+/* ── SEARCH & FILTER ── */
+.search-bar{padding:12px 16px;background:#fff;border-bottom:1px solid var(--gray-border);position:sticky;top:56px;z-index:90}
+.search-input-wrap{position:relative}
+.search-input-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);width:16px;height:16px;stroke-width:2}
+.search-input{width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;color:var(--text);background:#f9fafb;outline:none}
+.search-input:focus{background:#fff;border-color:var(--blue)}
+.filter-chips{display:flex;gap:8px;overflow-x:auto;padding:8px 0 0;scrollbar-width:none}
+.filter-chips::-webkit-scrollbar{display:none}
+.chip{padding:5px 12px;border-radius:20px;border:1.5px solid var(--gray-border);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;background:#fff;color:var(--text2);transition:all .15s;flex-shrink:0}
+.chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
+.modal-handle{width:40px;height:4px;background:var(--gray-border);border-radius:2px;margin:12px auto 4px}
+.modal-header{padding:4px 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:17px;font-weight:700;color:var(--text)}
+.modal-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--gray-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text2)}
+.modal-body{padding:0 20px 24px}
+.modal-body .form-group{margin-bottom:14px}
+.modal-body .form-group label{color:var(--text3)}
+.modal-body .form-group input,.modal-body .form-group select,.modal-body .form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;color:var(--text);background:#fff;outline:none}
+.modal-body .form-group input:focus,.modal-body .form-group select:focus,.modal-body .form-group textarea:focus{border-color:var(--blue)}
+.modal-body textarea{resize:none;height:80px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{padding:0 20px 16px;display:flex;gap:10px}
+.modal-footer .btn-primary{flex:1}
+.btn-outline{flex:1;padding:14px;border:1.5px solid var(--gray-border);border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;background:#fff;color:var(--text2)}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{background:var(--gray-border);border-radius:4px;height:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;background:var(--blue);transition:width .4s}
+.progress-fill.green{background:var(--green)}
+
+/* ── CHART AREA ── */
+.chart-placeholder{height:160px;background:var(--gray-light);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 4px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--blue);transition:height .5s;min-height:4px}
+.bar-label{font-size:9px;color:var(--text3);text-align:center;line-height:1.2}
+.bar-val{font-size:10px;font-weight:600;color:var(--text2)}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty-state svg{width:56px;height:56px;stroke-width:1;margin-bottom:12px;opacity:.4}
+.empty-state h3{font-size:16px;color:var(--text2);margin-bottom:6px}
+.empty-state p{font-size:13px;line-height:1.5}
+
+/* ── FAB ── */
+.fab{position:fixed;right:20px;bottom:80px;width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:26px;cursor:pointer;box-shadow:0 4px 16px rgba(26,86,219,.4);display:flex;align-items:center;justify-content:center;z-index:150;transition:transform .15s}
+.fab:active{transform:scale(.93)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── USER MENU ── */
+.user-menu{position:fixed;top:60px;right:12px;background:#fff;border-radius:var(--radius);box-shadow:0 4px 24px rgba(0,0,0,.18);padding:8px;z-index:200;min-width:180px;display:none}
+.user-menu.open{display:block}
+.menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--text2)}
+.menu-item:hover{background:var(--gray-light)}
+.menu-item svg{width:18px;height:18px;stroke-width:1.8;color:var(--text3)}
+.menu-divider{height:1px;background:var(--gray-border);margin:4px 0}
+
+/* ── PRIORITY PILL ── */
+.prio-1{color:#7c3aed;background:#ede9fe}
+.prio-2{color:#1d4ed8;background:#dbeafe}
+.prio-3{color:#0369a1;background:#e0f2fe}
+.prio-4{color:#0f766e;background:#ccfbf1}
+.prio-5,.prio-6,.prio-7,.prio-8{color:var(--amber);background:var(--amber-light)}
+
+/* ── PLAN TABLE ── */
+.plan-table-wrap{overflow-x:auto;padding:0 16px}
+.plan-table{width:100%;border-collapse:collapse;font-size:12px}
+.plan-table th{background:#f8fafc;color:var(--text3);font-weight:600;padding:8px 10px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--gray-border);position:sticky;top:0}
+.plan-table td{padding:9px 10px;border-bottom:1px solid var(--gray-border);vertical-align:middle}
+.plan-table tr:last-child td{border-bottom:none}
+.plan-table tr:hover td{background:#f8fafc}
+
+/* ── STATUS SELECT ── */
+.status-select{padding:5px 8px;border-radius:20px;border:none;font-size:11px;font-weight:600;cursor:pointer;outline:none;appearance:none;text-align:center}
+.status-select.wait{background:#fef3c7;color:#92400e}
+.status-select.running{background:#dbeafe;color:#1e40af}
+.status-select.done{background:#d1fae5;color:#065f46}
+
+/* ── REPORT ── */
+.report-section{padding:0 16px}
+.kpi-row{display:flex;gap:10px;margin-bottom:12px}
+.kpi-box{flex:1;background:#fff;border-radius:var(--radius);padding:12px;box-shadow:var(--shadow);text-align:center}
+.kpi-box .kv{font-size:22px;font-weight:700;color:var(--blue)}
+.kpi-box .kl{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.3}
+
+/* ── ANIMATIONS ── */
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal.open{animation:slideUp .25s ease-out}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">🏭</div>
+      <h1>Đông Phương</h1>
+      <p>Hệ thống quản lý sản xuất thanh cái</p>
+    </div>
+    <div class="form-group">
+      <label>Tài khoản</label>
+      <input id="loginUser" type="text" placeholder="Nhập tài khoản" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input id="loginPass" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Đăng nhập</button>
+    <div class="demo-hint">
+      <b>Demo:</b> admin / admin123 &nbsp;·&nbsp; nhanvien / nv123
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appScreen" class="screen">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span style="font-size:22px">🏭</span>
+      <div>
+        <div class="topbar h2" id="pageTitle" style="font-size:17px;font-weight:600">Dashboard</div>
+        <div class="topbar-subtitle" id="pageSubtitle">Đông Phương</div>
+      </div>
+    </div>
+    <button class="avatar-btn" onclick="toggleUserMenu()" id="avatarBtn">AD</button>
+  </div>
+
+  <!-- USER MENU -->
+  <div id="userMenu" class="user-menu">
+    <div style="padding:8px 12px 10px">
+      <div style="font-weight:600;font-size:14px" id="menuName">Admin</div>
+      <div style="font-size:12px;color:var(--text3)" id="menuRole">Quản trị viên</div>
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-item" onclick="closeMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Hồ sơ cá nhân
+    </div>
+    <div class="menu-item" onclick="closeMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.1 4.9C18.5 4.3 17.5 4.3 16.9 4.9L16.1 5.7C15.5 5.4 14.8 5.1 14 5V4C14 3.4 13.6 3 13 3H11C10.4 3 10 3.4 10 4V5C9.2 5.1 8.5 5.4 7.9 5.7L7.1 4.9C6.5 4.3 5.5 4.3 4.9 4.9C4.3 5.5 4.3 6.5 4.9 7.1L5.7 7.9C5.4 8.5 5.1 9.2 5 10H4C3.4 10 3 10.4 3 11V13C3 13.6 3.4 14 4 14H5C5.1 14.8 5.4 15.5 5.7 16.1L4.9 16.9C4.3 17.5 4.3 18.5 4.9 19.1C5.5 19.7 6.5 19.7 7.1 19.1L7.9 18.3C8.5 18.6 9.2 18.9 10 19V20C10 20.6 10.4 21 11 21H13C13.6 21 14 20.6 14 20V19C14.8 18.9 15.5 18.6 16.1 18.3L16.9 19.1C17.5 19.7 18.5 19.7 19.1 19.1C19.7 18.5 19.7 17.5 19.1 16.9L18.3 16.1C18.6 15.5 18.9 14.8 19 14H20C20.6 14 21 13.6 21 13V11C21 10.4 20.6 10 20 10H19C18.9 9.2 18.6 8.5 18.3 7.9L19.1 7.1C19.7 6.5 19.7 5.5 19.1 4.9Z"/></svg>
+      Cài đặt
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-item" onclick="doLogout()" style="color:var(--red)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:var(--red)"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Đăng xuất
+    </div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content" id="mainContent"></div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="showTab('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" onclick="showTab('dorDang')" id="nav-dorDang">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Dở dang
+      <span class="nav-badge" id="badgeDorDang">0</span>
+    </button>
+    <button class="nav-item" onclick="showTab('keHoach')" id="nav-keHoach">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Kế hoạch
+    </button>
+    <button class="nav-item" onclick="showTab('hoanThanh')" id="nav-hoanThanh">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Hoàn thành
+    </button>
+    <button class="nav-item" onclick="showTab('baoCao')" id="nav-baoCao">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Báo cáo
+    </button>
+  </nav>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fabBtn" onclick="openAddModal()" style="display:none" aria-label="Thêm đơn mới">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- ADD/EDIT ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal" id="orderModalContent">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Thêm đơn mới</div>
+      <button class="modal-close" onclick="closeModal('orderModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-group">
+        <label>Khách hàng *</label>
+        <input id="fCustomer" placeholder="Tên khách hàng">
+      </div>
+      <div class="row-2">
+        <div class="form-group">
+          <label>Mã PO</label>
+          <input id="fPO" placeholder="VD: 46189">
+        </div>
+        <div class="form-group">
+          <label>Nguyên liệu</label>
+          <select id="fMaterial">
+            <option value="A">A (loại A)</option>
+            <option value="B*" selected>B* (đồng thau)</option>
+            <option value="C">C (khác)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Chủng loại</label>
+        <input id="fType" placeholder="VD: Bo cạnh, COIL...">
+      </div>
+      <div class="row-2">
+        <div class="form-group">
+          <label>Dày (mm)</label>
+          <input id="fThick" type="number" placeholder="VD: 10">
+        </div>
+        <div class="form-group">
+          <label>Rộng (mm)</label>
+          <input id="fWidth" type="number" placeholder="VD: 80">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="form-group">
+          <label>Dài (mm)</label>
+          <input id="fLen" type="number" placeholder="VD: 4000">
+        </div>
+        <div class="form-group">
+          <label>Số thanh</label>
+          <input id="fQty" type="number" placeholder="VD: 100">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="form-group">
+          <label>Số KG</label>
+          <input id="fKg" type="number" step="0.01" placeholder="Tự tính hoặc nhập">
+        </div>
+        <div class="form-group">
+          <label>Ưu tiên</label>
+          <select id="fPriority">
+            <option value="GẤP 1">GẤP 1</option>
+            <option value="GẤP 2">GẤP 2</option>
+            <option value="GẤP 3">GẤP 3</option>
+            <option value="GẤP 4">GẤP 4</option>
+            <option value="GẤP 5">GẤP 5</option>
+            <option value="GẤP 6">GẤP 6</option>
+            <option value="GẤP 7">GẤP 7</option>
+            <option value="GẤP 8">GẤP 8</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Thời gian giao hàng</label>
+        <input id="fDelivery" type="date">
+      </div>
+      <div class="form-group">
+        <label>Địa điểm giao</label>
+        <input id="fAddress" placeholder="VD: Hà Nội, TP.HCM...">
+      </div>
+      <div class="form-group">
+        <label>Ghi chú</label>
+        <textarea id="fNote" placeholder="Ghi chú thêm..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal('orderModal')">Hủy</button>
+      <button class="btn-primary" onclick="saveOrder()">Lưu đơn hàng</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="confirmTitle">Xác nhận</div>
+      <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMsg" style="color:var(--text2);line-height:1.6;font-size:14px"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal('confirmModal')">Hủy</button>
+      <button class="btn-primary" id="confirmOkBtn">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA STORE ──
+const USERS = {
+  admin: {pass:'admin123', role:'admin', name:'Quản trị viên'},
+  nhanvien: {pass:'nv123', role:'staff', name:'Nguyễn Văn A'}
+};
+
+let currentUser = null;
+let currentTab = 'dashboard';
+let editingId = null;
+let searchQ = '';
+let filterStatus = 'all';
+let filterPriority = 'all';
+
+// Seed data from Excel file
+let orders = [
+  {id:1,customer:'EEMC',po:'46189',material:'B*',type:'COIL 500m',thick:3,width:25,len:4000,qty:500,kg:0,note:'5 cuộn/100m',delivery:'',address:'',priority:'GẤP 1',status:'done',completed:true},
+  {id:3,customer:'Ls Electric',po:'46189',material:'A',type:'',thick:3,width:15,len:4000,qty:48,kg:76.9,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:4,customer:'Ls Electric',po:'46189',material:'A',type:'',thick:4,width:40,len:4000,qty:3,kg:17.1,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:5,customer:'Ls Electric',po:'46189',material:'A',type:'Bo cạnh',thick:6,width:40,len:4000,qty:345,kg:2947.7,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:6,customer:'Ls Electric',po:'46189',material:'A',type:'Bo cạnh',thick:6,width:50,len:4000,qty:49,kg:523.3,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:7,customer:'Ls Electric',po:'46189',material:'A',type:'Bo cạnh',thick:8,width:40,len:4000,qty:33,kg:375.9,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:8,customer:'Ls Electric',po:'46189',material:'A',type:'Bo cạnh',thick:10,width:160,len:4000,qty:6,kg:341.8,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:9,customer:'Ls Electric',po:'46189',material:'A',type:'Bo cạnh',thick:12,width:60,len:4000,qty:378,kg:9688.9,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:11,customer:'Vietpower',po:'46189',material:'B*',type:'',thick:3,width:15,len:4000,qty:50,kg:0,note:'',delivery:'',address:'',priority:'GẤP 2',status:'wait',completed:false},
+  {id:12,customer:'Vietpower',po:'46189',material:'B*',type:'',thick:3,width:30,len:4000,qty:50,kg:0,note:'',delivery:'',address:'',priority:'GẤP 2',status:'wait',completed:false},
+  {id:13,customer:'Vietpower',po:'46189',material:'B*',type:'',thick:5,width:30,len:4000,qty:20,kg:0,note:'',delivery:'',address:'',priority:'GẤP 2',status:'wait',completed:false},
+  {id:14,customer:'Vietpower',po:'46189',material:'B*',type:'',thick:5,width:40,len:4000,qty:25,kg:0,note:'',delivery:'',address:'',priority:'GẤP 2',status:'wait',completed:false},
+  {id:18,customer:'Vietpower',po:'46189',material:'B*',type:'',thick:10,width:60,len:4000,qty:20,kg:0,note:'',delivery:'',address:'',priority:'GẤP 2',status:'done',completed:false},
+  {id:19,customer:'Vietpower',po:'46186',material:'B*',type:'',thick:4,width:20,len:4000,qty:65,kg:185.1,note:'',delivery:'',address:'',priority:'GẤP 2',status:'wait',completed:false},
+  {id:21,customer:'Vietpower',po:'46186',material:'B*',type:'',thick:6,width:60,len:4000,qty:5,kg:64.1,note:'',delivery:'',address:'',priority:'GẤP 2',status:'done',completed:false},
+  {id:22,customer:'Vietpower',po:'46186',material:'B*',type:'',thick:10,width:80,len:4000,qty:15,kg:427.2,note:'',delivery:'',address:'',priority:'GẤP 2',status:'done',completed:false},
+  {id:23,customer:'Vietpower',po:'46186',material:'B*',type:'',thick:10,width:120,len:4000,qty:45,kg:1922.4,note:'',delivery:'',address:'',priority:'GẤP 2',status:'wait',completed:false},
+  {id:25,customer:'SEIKI',po:'46188',material:'B*',type:'',thick:10,width:100,len:4000,qty:48,kg:1708.8,note:'Chạy dư ra để rút vuông',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:26,customer:'SEIKI',po:'46183',material:'B*',type:'',thick:10,width:125,len:4000,qty:52,kg:2314,note:'',delivery:'',address:'',priority:'GẤP 1',status:'done',completed:false},
+  {id:27,customer:'SEIKI',po:'46183',material:'B*',type:'',thick:10,width:60,len:4000,qty:19,kg:405.8,note:'',delivery:'',address:'',priority:'GẤP 1',status:'done',completed:false},
+  {id:28,customer:'SEIKI',po:'46183',material:'B*',type:'',thick:10,width:80,len:4000,qty:15,kg:427.2,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:29,customer:'SEIKI',po:'46183',material:'B*',type:'Bo cạnh',thick:8,width:40,len:4000,qty:10,kg:113.9,note:'',delivery:'',address:'',priority:'GẤP 1',status:'done',completed:false},
+  {id:30,customer:'SEIKI',po:'46183',material:'B*',type:'Bo cạnh',thick:10,width:40,len:4000,qty:80,kg:1139.2,note:'',delivery:'',address:'',priority:'GẤP 1',status:'done',completed:false},
+  {id:31,customer:'SEIKI',po:'46183',material:'B*',type:'Bo cạnh',thick:10,width:60,len:4000,qty:78,kg:1666.1,note:'',delivery:'',address:'',priority:'GẤP 1',status:'done',completed:false},
+  {id:32,customer:'SEIKI',po:'46183',material:'B*',type:'Bo cạnh',thick:10,width:80,len:4000,qty:180,kg:5126.4,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:33,customer:'SEIKI',po:'46183',material:'B*',type:'Bo cạnh',thick:10,width:100,len:4000,qty:54,kg:1922.4,note:'',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+  {id:34,customer:'SEIKI',po:'46183',material:'B*',type:'Bo cạnh',thick:10,width:150,len:4000,qty:8,kg:427.2,note:'',delivery:'',address:'',priority:'GẤP 1',status:'done',completed:false},
+  {id:38,customer:'Vietstar',po:'46170',material:'B*',type:'Bo cạnh',thick:6,width:50,len:4000,qty:68,kg:726.2,note:'',delivery:'',address:'',priority:'GẤP 4',status:'wait',completed:false},
+  {id:39,customer:'Vietstar',po:'46170',material:'B*',type:'Bo cạnh',thick:10,width:50,len:4000,qty:15,kg:267,note:'',delivery:'',address:'',priority:'GẤP 4',status:'wait',completed:false},
+  {id:40,customer:'Vietstar',po:'46170',material:'B*',type:'Bo cạnh',thick:10,width:75,len:4000,qty:115,kg:3070.5,note:'',delivery:'',address:'',priority:'GẤP 4',status:'wait',completed:false},
+  {id:41,customer:'Vietstar',po:'46170',material:'A',type:'',thick:10,width:40,len:4000,qty:91,kg:1295.8,note:'',delivery:'',address:'',priority:'GẤP 4',status:'wait',completed:false},
+  {id:42,customer:'Vietstar',po:'46170',material:'A',type:'',thick:10,width:80,len:4000,qty:145,kg:4129.6,note:'',delivery:'',address:'',priority:'GẤP 4',status:'done',completed:false},
+  {id:47,customer:'Đông Nam Á',po:'46165',material:'B*',type:'',thick:10,width:80,len:4000,qty:39,kg:1110.7,note:'',delivery:'',address:'',priority:'GẤP 5',status:'wait',completed:false},
+  {id:48,customer:'Đông Nam Á',po:'46165',material:'B*',type:'',thick:10,width:100,len:4000,qty:32,kg:1139.2,note:'',delivery:'',address:'',priority:'GẤP 5',status:'wait',completed:false},
+  {id:53,customer:'Hải Nam',po:'46185',material:'B*',type:'',thick:10,width:10,len:4000,qty:57,kg:202.9,note:'',delivery:'',address:'',priority:'GẤP 6',status:'wait',completed:false},
+  {id:54,customer:'Hải Nam',po:'46185',material:'B*',type:'',thick:10,width:20,len:4000,qty:37,kg:263.4,note:'',delivery:'',address:'',priority:'GẤP 6',status:'wait',completed:false},
+  {id:55,customer:'Hải Nam',po:'46185',material:'B*',type:'',thick:10,width:30,len:4000,qty:102,kg:1089.4,note:'',delivery:'',address:'',priority:'GẤP 6',status:'wait',completed:false},
+  {id:64,customer:'HAWEE',po:'',material:'B*',type:'',thick:10,width:80,len:4000,qty:2,kg:56.96,note:'',delivery:'',address:'',priority:'GẤP 7',status:'wait',completed:false},
+  {id:66,customer:'HAWEE',po:'',material:'B*',type:'',thick:10,width:100,len:4000,qty:55,kg:1958,note:'',delivery:'',address:'',priority:'GẤP 7',status:'wait',completed:false},
+  {id:70,customer:'HAWEE',po:'',material:'B*',type:'',thick:5,width:100,len:4000,qty:169,kg:3008.2,note:'',delivery:'',address:'',priority:'GẤP 7',status:'wait',completed:false},
+  {id:71,customer:'HAWEE',po:'',material:'B*',type:'',thick:8,width:20,len:4000,qty:88,kg:501.2,note:'',delivery:'',address:'',priority:'GẤP 7',status:'done',completed:false},
+  {id:73,customer:'Gửi kho miền Nam',po:'46186',material:'',type:'',thick:3,width:10,len:4000,qty:400,kg:427.2,note:'',delivery:'',address:'',priority:'GẤP 8',status:'wait',completed:false},
+  {id:74,customer:'Gửi kho miền Nam',po:'46186',material:'',type:'',thick:3,width:20,len:4000,qty:150,kg:320.4,note:'',delivery:'',address:'',priority:'GẤP 8',status:'wait',completed:false},
+  {id:84,customer:'Kim Ưng',po:'',material:'B*',type:'Không qua rút',thick:18,width:120,len:760,qty:100,kg:1461,note:'Hàng không qua rút',delivery:'',address:'',priority:'GẤP 1',status:'wait',completed:false},
+];
+
+let nextId = 200;
+
+// ── AUTH ──
+function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if(USERS[u] && USERS[u].pass === p){
+    currentUser = {username:u,...USERS[u]};
+    document.getElementById('loginScreen').classList.remove('active');
+    document.getElementById('appScreen').classList.add('active');
+    document.getElementById('avatarBtn').textContent = u === 'admin' ? 'AD' : 'NV';
+    document.getElementById('menuName').textContent = currentUser.name;
+    document.getElementById('menuRole').textContent = currentUser.role === 'admin' ? 'Quản trị viên' : 'Nhân viên';
+    if(currentUser.role === 'admin') document.getElementById('fabBtn').style.display = 'flex';
+    showTab('dashboard');
+    updateBadges();
+  } else {
+    showToast('Tài khoản hoặc mật khẩu không đúng');
+  }
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+
+function doLogout(){
+  closeMenu();
+  document.getElementById('appScreen').classList.remove('active');
+  document.getElementById('loginScreen').classList.add('active');
+  currentUser = null;
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('fabBtn').style.display = 'none';
+}
+
+// ── TAB NAVIGATION ──
+function showTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-'+tab).classList.add('active');
+  const titles = {dashboard:'Dashboard',dorDang:'Đơn dở dang',keHoach:'Kế hoạch sản xuất',hoanThanh:'Đơn hoàn thành',baoCao:'Báo cáo'};
+  document.getElementById('pageTitle').textContent = titles[tab];
+  searchQ = ''; filterStatus = 'all'; filterPriority = 'all';
+  // show FAB only on dorDang for admin
+  document.getElementById('fabBtn').style.display = (tab === 'dorDang' && currentUser?.role === 'admin') ? 'flex' : 'none';
+  renderTab(tab);
+}
+
+function renderTab(tab){
+  const c = document.getElementById('mainContent');
+  if(tab === 'dashboard') c.innerHTML = renderDashboard();
+  else if(tab === 'dorDang') c.innerHTML = renderDorDang();
+  else if(tab === 'keHoach') c.innerHTML = renderKeHoach();
+  else if(tab === 'hoanThanh') c.innerHTML = renderHoanThanh();
+  else if(tab === 'baoCao') c.innerHTML = renderBaoCao();
+  c.scrollTop = 0;
+}
+
+// ── HELPERS ──
+function statusBadge(s){
+  if(s==='done') return '<span class="badge badge-done">✅ Xong</span>';
+  if(s==='running') return '<span class="badge badge-running">🔄 Đang SX</span>';
+  if(s==='wait') return '<span class="badge badge-wait">⏳ Chờ SX</span>';
+  return '<span class="badge badge-cancel">🚫 Hủy</span>';
+}
+function prioClass(p){
+  const n = parseInt(p.replace('GẤP ',''));
+  return 'prio-'+n;
+}
+function specStr(o){
+  return `${o.thick}×${o.width}×${o.len}mm${o.type?' · '+o.type:''}${o.material?' · '+o.material:''}`;
+}
+function fmtKg(v){ return v>0 ? v.toLocaleString('vi-VN',{maximumFractionDigits:1})+' kg' : '—'; }
+function updateBadges(){
+  const pending = orders.filter(o=>!o.completed&&o.status!=='done').length;
+  const badge = document.getElementById('badgeDorDang');
+  badge.textContent = pending;
+  badge.style.display = pending > 0 ? 'flex' : 'none';
+}
+
+// ── DASHBOARD ──
+function renderDashboard(){
+  const total = orders.length;
+  const done = orders.filter(o=>o.status==='done').length;
+  const running = orders.filter(o=>o.status==='running').length;
+  const wait = orders.filter(o=>o.status==='wait').length;
+  const totalKg = orders.reduce((s,o)=>s+(o.kg||0),0);
+  const doneKg = orders.filter(o=>o.status==='done').reduce((s,o)=>s+(o.kg||0),0);
+  const pct = total>0?Math.round(done/total*100):0;
+  const customers = [...new Set(orders.map(o=>o.customer))];
+
+  // by customer
+  const byCustomer = {};
+  customers.forEach(c=>{
+    const items = orders.filter(o=>o.customer===c);
+    byCustomer[c]={total:items.length, done:items.filter(o=>o.status==='done').length, kg:items.reduce((s,o)=>s+(o.kg||0),0)};
+  });
+  const sorted = customers.sort((a,b)=> {
+    const pa = orders.find(o=>o.customer===a)?.priority||'GẤP 9';
+    const pb = orders.find(o=>o.customer===b)?.priority||'GẤP 9';
+    return pa.localeCompare(pb);
+  });
+
+  const maxKg = Math.max(...sorted.map(c=>byCustomer[c].kg),1);
+
+  return `
+<div class="stat-grid">
+  <div class="stat-tile blue">
+    <div class="label">Tổng đơn hàng</div>
+    <div class="value">${total}</div>
+    <div class="sub">cỡ sản phẩm</div>
+  </div>
+  <div class="stat-tile green">
+    <div class="label">Đã hoàn thành</div>
+    <div class="value">${done}</div>
+    <div class="sub">${pct}% tổng</div>
+  </div>
+  <div class="stat-tile amber">
+    <div class="label">Đang sản xuất</div>
+    <div class="value">${running}</div>
+    <div class="sub">cỡ đang chạy</div>
+  </div>
+  <div class="stat-tile red">
+    <div class="label">Chờ sản xuất</div>
+    <div class="value">${wait}</div>
+    <div class="sub">cỡ chưa bắt đầu</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">Tiến độ tổng thể</div>
+    <div style="font-size:13px;font-weight:700;color:var(--blue)">${pct}%</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill ${pct>=80?'green':''}" style="width:${pct}%"></div></div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:6px">
+    <span>0 kg</span><span>${fmtKg(doneKg)} / ${fmtKg(totalKg)}</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><div class="card-title">Theo khách hàng (KG)</div></div>
+  ${sorted.slice(0,8).map(c=>{
+    const d = byCustomer[c];
+    const pp = d.total>0?Math.round(d.done/d.total*100):0;
+    const prio = orders.find(o=>o.customer===c)?.priority||'';
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:500">${c} <span class="badge ${prioClass(prio)} badge" style="font-size:10px;padding:2px 6px">${prio}</span></div>
+        <div style="font-size:11px;color:var(--text3)">${d.done}/${d.total} cỡ · ${fmtKg(d.kg)}</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill${pp===100?' green':''}" style="width:${pp}%"></div></div>
+    </div>`;
+  }).join('')}
+</div>
+
+<div class="card">
+  <div class="card-header"><div class="card-title">Cập nhật lần cuối</div></div>
+  <div style="font-size:13px;color:var(--text2)">📅 ${new Date().toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+  <div style="font-size:12px;color:var(--text3);margin-top:4px">Dữ liệu đồng bộ realtime · Đông Phương Production</div>
+</div>
+`;
+}
+
+// ── ĐƠN DỞ DANG ──
+function renderDorDang(){
+  const pending = orders.filter(o=>!o.completed);
+  let filtered = pending;
+  if(searchQ) filtered = filtered.filter(o=>
+    o.customer.toLowerCase().includes(searchQ)||
+    (o.po+'').toLowerCase().includes(searchQ)||
+    specStr(o).toLowerCase().includes(searchQ)
+  );
+  if(filterStatus!=='all') filtered = filtered.filter(o=>o.status===filterStatus);
+  if(filterPriority!=='all') filtered = filtered.filter(o=>o.priority===filterPriority);
+
+  const counts = {all:pending.length, wait:pending.filter(o=>o.status==='wait').length, running:pending.filter(o=>o.status==='running').length, done:pending.filter(o=>o.status==='done').length};
+
+  return `
+<div class="search-bar">
+  <div class="search-input-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-input" placeholder="Tìm khách hàng, PO, kích thước..." oninput="handleSearch(this.value)" value="${searchQ}">
+  </div>
+  <div class="filter-chips">
+    <div class="chip ${filterStatus==='all'?'active':''}" onclick="handleFilterStatus('all')">Tất cả (${counts.all})</div>
+    <div class="chip ${filterStatus==='wait'?'active':''}" onclick="handleFilterStatus('wait')">⏳ Chờ SX (${counts.wait})</div>
+    <div class="chip ${filterStatus==='running'?'active':''}" onclick="handleFilterStatus('running')">🔄 Đang SX (${counts.running})</div>
+    <div class="chip ${filterStatus==='done'?'active':''}" onclick="handleFilterStatus('done')">✅ Xong (${counts.done})</div>
+  </div>
+</div>
+<div style="height:8px"></div>
+<div class="order-list">
+${filtered.length===0?`
+  <div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    <h3>Không có đơn nào</h3>
+    <p>Không tìm thấy đơn hàng phù hợp với bộ lọc.</p>
+  </div>`:
+  filtered.map(o=>`
+  <div class="order-item">
+    <div class="order-item-header">
+      <div>
+        <div class="order-customer">${o.customer}</div>
+        <div class="order-spec">PO: ${o.po||'—'} · ${specStr(o)}</div>
+      </div>
+      ${statusBadge(o.status)}
+    </div>
+    <div class="order-meta">
+      <span class="order-kg">📦 ${o.qty} thanh${o.kg>0?' · '+fmtKg(o.kg):''}</span>
+      <span class="badge ${prioClass(o.priority)} badge">${o.priority}</span>
+      ${o.note?`<span style="font-size:11px;color:var(--text3)">📝 ${o.note}</span>`:''}
+    </div>
+    <div class="order-actions">
+      ${currentUser.role==='admin'?`
+        <button class="action-btn primary" onclick="openEditModal(${o.id})">✏️ Sửa</button>
+        <button class="action-btn success" onclick="confirmComplete(${o.id})">✅ Xác nhận xong</button>
+        <button class="action-btn danger" onclick="confirmDelete(${o.id})">🗑</button>
+      `:`<button class="action-btn" onclick="openStatusChange(${o.id})">🔄 Cập nhật trạng thái</button>`}
+    </div>
+  </div>`).join('')}
+</div>`;
+}
+
+// ── KẾ HOẠCH SX ──
+function renderKeHoach(){
+  const active = orders.filter(o=>!o.completed);
+  let filtered = active;
+  if(searchQ) filtered = filtered.filter(o=>
+    o.customer.toLowerCase().includes(searchQ)||specStr(o).toLowerCase().includes(searchQ)
+  );
+  if(filterPriority!=='all') filtered = filtered.filter(o=>o.priority===filterPriority);
+  filtered.sort((a,b)=>a.priority.localeCompare(b.priority));
+
+  const priorities = ['GẤP 1','GẤP 2','GẤP 3','GẤP 4','GẤP 5','GẤP 6','GẤP 7','GẤP 8'];
+  const activePrios = priorities.filter(p=>active.some(o=>o.priority===p));
+
+  return `
+<div class="search-bar">
+  <div class="search-input-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-input" placeholder="Tìm khách hàng, kích thước..." oninput="handleSearch(this.value)" value="${searchQ}">
+  </div>
+  <div class="filter-chips">
+    <div class="chip ${filterPriority==='all'?'active':''}" onclick="handleFilterPriority('all')">Tất cả</div>
+    ${activePrios.map(p=>`<div class="chip ${filterPriority===p?'active':''}" onclick="handleFilterPriority('${p}')">${p}</div>`).join('')}
+  </div>
+</div>
+<div style="height:8px"></div>
+<div class="plan-table-wrap">
+<table class="plan-table">
+<thead>
+<tr>
+  <th style="width:30px">#</th>
+  <th>Khách hàng</th>
+  <th>Kích thước</th>
+  <th>Thanh</th>
+  <th>KG</th>
+  <th>Ưu tiên</th>
+  <th>Trạng thái</th>
+</tr>
+</thead>
+<tbody>
+${filtered.length===0?`<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:32px">Không có dữ liệu</td></tr>`:''}
+${filtered.map((o,i)=>`
+<tr>
+  <td style="color:var(--text3);font-size:11px">${i+1}</td>
+  <td><div style="font-size:13px;font-weight:500">${o.customer}</div><div style="font-size:10px;color:var(--text3)">PO: ${o.po||'—'}</div></td>
+  <td style="font-size:12px;color:var(--text2)">${o.thick}×${o.width}×${o.len}</td>
+  <td style="font-size:12px;text-align:right">${o.qty}</td>
+  <td style="font-size:12px;text-align:right">${o.kg>0?o.kg.toFixed(1):'—'}</td>
+  <td><span class="badge ${prioClass(o.priority)}" style="font-size:10px;padding:2px 6px">${o.priority}</span></td>
+  <td>
+    <select class="status-select ${o.status}" onchange="updateStatus(${o.id},this.value,this)">
+      <option value="wait" ${o.status==='wait'?'selected':''}>⏳ Chờ</option>
+      <option value="running" ${o.status==='running'?'selected':''}>🔄 Đang SX</option>
+      <option value="done" ${o.status==='done'?'selected':''}>✅ Xong</option>
+    </select>
+  </td>
+</tr>`).join('')}
+</tbody>
+</table>
+</div>
+<div style="height:16px"></div>`;
+}
+
+// ── ĐƠN HOÀN THÀNH ──
+function renderHoanThanh(){
+  const completed = orders.filter(o=>o.completed);
+  return `
+<div style="height:8px"></div>
+${completed.length===0?`
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  <h3>Chưa có đơn hoàn thành</h3>
+  <p>Các đơn được Admin xác nhận hoàn thành sẽ xuất hiện ở đây.</p>
+</div>`:''}
+<div class="order-list">
+${completed.map(o=>`
+<div class="order-item" style="opacity:.85">
+  <div class="order-item-header">
+    <div>
+      <div class="order-customer">${o.customer}</div>
+      <div class="order-spec">PO: ${o.po||'—'} · ${specStr(o)}</div>
+    </div>
+    <span class="badge badge-done">✅ Hoàn thành</span>
+  </div>
+  <div class="order-meta">
+    <span class="order-kg">📦 ${o.qty} thanh${o.kg>0?' · '+fmtKg(o.kg):''}</span>
+    <span class="badge ${prioClass(o.priority)} badge">${o.priority}</span>
+  </div>
+  ${currentUser.role==='admin'?`
+  <div class="order-actions">
+    <button class="action-btn" onclick="unComplete(${o.id})" style="color:var(--amber)">↩️ Đưa về dở dang</button>
+  </div>`:''}
+</div>`).join('')}
+</div>`;
+}
+
+// ── BÁO CÁO ──
+function renderBaoCao(){
+  const total = orders.length;
+  const done = orders.filter(o=>o.status==='done').length;
+  const running = orders.filter(o=>o.status==='running').length;
+  const wait = orders.filter(o=>o.status==='wait').length;
+  const completed = orders.filter(o=>o.completed).length;
+  const totalKg = orders.reduce((s,o)=>s+(o.kg||0),0);
+  const doneKg = orders.filter(o=>o.status==='done').reduce((s,o)=>s+(o.kg||0),0);
+  const pct = total>0?Math.round(done/total*100):0;
+
+  const customers = [...new Set(orders.map(o=>o.customer))];
+  const custData = customers.map(c=>{
+    const items = orders.filter(o=>o.customer===c);
+    return {name:c, total:items.length, done:items.filter(o=>o.status==='done').length, kg:items.reduce((s,o)=>s+(o.kg||0),0), prio: items[0]?.priority||'GẤP 9'};
+  }).sort((a,b)=>a.prio.localeCompare(b.prio));
+
+  return `
+<div style="height:8px"></div>
+<div class="card">
+  <div class="card-header"><div class="card-title">📊 Tổng quan</div><div style="font-size:12px;color:var(--text3)">${new Date().toLocaleDateString('vi-VN')}</div></div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kv">${total}</div><div class="kl">Tổng cỡ SX</div></div>
+    <div class="kpi-box"><div class="kv" style="color:var(--green)">${done}</div><div class="kl">Đã xong</div></div>
+    <div class="kpi-box"><div class="kv" style="color:var(--amber)">${running}</div><div class="kl">Đang SX</div></div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kv" style="color:var(--red)">${wait}</div><div class="kl">Chờ SX</div></div>
+    <div class="kpi-box"><div class="kv">${pct}%</div><div class="kl">Tỷ lệ hoàn thành</div></div>
+    <div class="kpi-box"><div class="kv" style="color:var(--green)">${completed}</div><div class="kl">Đơn xác nhận</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><div class="card-title">⚖️ Khối lượng (KG)</div></div>
+  <div class="kpi-row">
+    <div class="kpi-box"><div class="kv" style="font-size:16px">${totalKg.toLocaleString('vi-VN',{maximumFractionDigits:0})}</div><div class="kl">Tổng KG kế hoạch</div></div>
+    <div class="kpi-box"><div class="kv" style="font-size:16px;color:var(--green)">${doneKg.toLocaleString('vi-VN',{maximumFractionDigits:0})}</div><div class="kl">KG đã hoàn thành</div></div>
+  </div>
+  <div class="progress-bar" style="height:10px"><div class="progress-fill" style="width:${totalKg>0?Math.round(doneKg/totalKg*100):0}%"></div></div>
+  <div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center">${totalKg>0?Math.round(doneKg/totalKg*100):0}% khối lượng hoàn thành</div>
+</div>
+
+<div class="card">
+  <div class="card-header"><div class="card-title">👥 Theo khách hàng</div></div>
+  ${custData.map(c=>{
+    const pp = c.total>0?Math.round(c.done/c.total*100):0;
+    return `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <div>
+          <span style="font-size:13px;font-weight:500">${c.name}</span>
+          <span class="badge ${prioClass(c.prio)}" style="font-size:10px;margin-left:6px;padding:2px 6px">${c.prio}</span>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:${pp===100?'var(--green)':'var(--blue)'}">${pp}%</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill${pp===100?' green':''}" style="width:${pp}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px">
+        <span>${c.done}/${c.total} cỡ xong</span>
+        <span>${fmtKg(c.kg)}</span>
+      </div>
+    </div>`;
+  }).join('')}
+</div>
+<div style="height:16px"></div>`;
+}
+
+// ── SEARCH & FILTER HANDLERS ──
+function handleSearch(v){
+  searchQ = v.toLowerCase();
+  renderTab(currentTab);
+}
+function handleFilterStatus(s){
+  filterStatus = s;
+  renderTab(currentTab);
+}
+function handleFilterPriority(p){
+  filterPriority = p;
+  renderTab(currentTab);
+}
+
+// ── STATUS UPDATE ──
+function updateStatus(id, newStatus, sel){
+  const o = orders.find(o=>o.id===id);
+  if(!o) return;
+  o.status = newStatus;
+  sel.className = 'status-select '+newStatus;
+  updateBadges();
+  showToast('Đã cập nhật: '+{wait:'⏳ Chờ SX',running:'🔄 Đang SX',done:'✅ Xong'}[newStatus]);
+  if(currentTab==='dashboard') renderTab('dashboard');
+}
+
+// ── MODALS ──
+function openAddModal(){
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Thêm đơn mới';
+  ['fCustomer','fPO','fType','fThick','fWidth','fLen','fQty','fKg','fDelivery','fAddress','fNote'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = id === 'fLen' ? '4000' : '';
+  });
+  document.getElementById('fMaterial').value = 'B*';
+  document.getElementById('fPriority').value = 'GẤP 1';
+  openModal('orderModal');
+}
+
+function openEditModal(id){
+  const o = orders.find(o=>o.id===id);
+  if(!o) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Sửa đơn hàng';
+  document.getElementById('fCustomer').value = o.customer;
+  document.getElementById('fPO').value = o.po;
+  document.getElementById('fMaterial').value = o.material;
+  document.getElementById('fType').value = o.type;
+  document.getElementById('fThick').value = o.thick;
+  document.getElementById('fWidth').value = o.width;
+  document.getElementById('fLen').value = o.len;
+  document.getElementById('fQty').value = o.qty;
+  document.getElementById('fKg').value = o.kg||'';
+  document.getElementById('fPriority').value = o.priority;
+  document.getElementById('fDelivery').value = o.delivery;
+  document.getElementById('fAddress').value = o.address;
+  document.getElementById('fNote').value = o.note;
+  openModal('orderModal');
+}
+
+function saveOrder(){
+  const customer = document.getElementById('fCustomer').value.trim();
+  if(!customer){ showToast('Vui lòng nhập tên khách hàng'); return; }
+  const thick = parseFloat(document.getElementById('fThick').value)||0;
+  const width = parseFloat(document.getElementById('fWidth').value)||0;
+  const len = parseFloat(document.getElementById('fLen').value)||4000;
+  const qty = parseInt(document.getElementById('fQty').value)||0;
+  let kg = parseFloat(document.getElementById('fKg').value)||0;
+  if(kg===0 && thick && width && len && qty){
+    const density = 8.9;
+    kg = parseFloat((thick/1000 * width/1000 * len/1000 * qty * density).toFixed(2));
+  }
+  const obj = {
+    customer, po:document.getElementById('fPO').value.trim(),
+    material:document.getElementById('fMaterial').value,
+    type:document.getElementById('fType').value.trim(),
+    thick,width,len,qty,kg,
+    priority:document.getElementById('fPriority').value,
+    delivery:document.getElementById('fDelivery').value,
+    address:document.getElementById('fAddress').value.trim(),
+    note:document.getElementById('fNote').value.trim(),
+    completed:false
+  };
+  if(editingId){
+    const idx = orders.findIndex(o=>o.id===editingId);
+    orders[idx] = {...orders[idx],...obj};
+    showToast('✅ Đã cập nhật đơn hàng');
+  } else {
+    obj.id = nextId++; obj.status = 'wait';
+    orders.push(obj);
+    showToast('✅ Đã thêm đơn mới');
+  }
+  closeModal('orderModal');
+  updateBadges();
+  renderTab(currentTab);
+}
+
+function confirmComplete(id){
+  const o = orders.find(o=>o.id===id);
+  if(!o) return;
+  document.getElementById('confirmTitle').textContent = 'Xác nhận hoàn thành';
+  document.getElementById('confirmMsg').textContent = `Xác nhận đơn "${o.customer}" (${specStr(o)}) đã hoàn thành và chuyển sang mục Đơn hoàn thành?`;
+  document.getElementById('confirmOkBtn').onclick = ()=>{
+    o.completed = true; o.status = 'done';
+    closeModal('confirmModal');
+    updateBadges();
+    renderTab(currentTab);
+    showToast('✅ Đã xác nhận hoàn thành');
+  };
+  openModal('confirmModal');
+}
+
+function unComplete(id){
+  const o = orders.find(o=>o.id===id);
+  if(!o) return;
+  o.completed = false; o.status = 'wait';
+  updateBadges();
+  renderTab(currentTab);
+  showToast('↩️ Đã đưa về dở dang');
+}
+
+function confirmDelete(id){
+  const o = orders.find(o=>o.id===id);
+  if(!o) return;
+  document.getElementById('confirmTitle').textContent = 'Xóa đơn hàng';
+  document.getElementById('confirmMsg').textContent = `Bạn có chắc muốn xóa đơn "${o.customer}" (${specStr(o)})? Thao tác này không thể hoàn tác.`;
+  document.getElementById('confirmOkBtn').style.background = 'var(--red)';
+  document.getElementById('confirmOkBtn').style.borderColor = 'var(--red)';
+  document.getElementById('confirmOkBtn').onclick = ()=>{
+    orders = orders.filter(o=>o.id!==id);
+    closeModal('confirmModal');
+    updateBadges();
+    renderTab(currentTab);
+    showToast('🗑️ Đã xóa đơn hàng');
+    document.getElementById('confirmOkBtn').style.background = '';
+    document.getElementById('confirmOkBtn').style.borderColor = '';
+  };
+  openModal('confirmModal');
+}
+
+function openStatusChange(id){
+  const o = orders.find(o=>o.id===id);
+  if(!o) return;
+  document.getElementById('confirmTitle').textContent = 'Cập nhật trạng thái';
+  document.getElementById('confirmMsg').innerHTML = `
+    <b>${o.customer}</b> — ${specStr(o)}<br><br>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button onclick="updateStatus(${o.id},'wait',{className:'',classList:{add:()=>{},remove:()=>{}}}); closeModal('confirmModal'); renderTab(currentTab)" style="padding:8px 16px;border-radius:20px;border:2px solid #fef3c7;background:#fef3c7;color:#92400e;font-weight:600;cursor:pointer">⏳ Chờ SX</button>
+      <button onclick="updateStatus(${o.id},'running',{className:'',classList:{add:()=>{},remove:()=>{}}}); closeModal('confirmModal'); renderTab(currentTab)" style="padding:8px 16px;border-radius:20px;border:2px solid #dbeafe;background:#dbeafe;color:#1e40af;font-weight:600;cursor:pointer">🔄 Đang SX</button>
+      <button onclick="updateStatus(${o.id},'done',{className:'',classList:{add:()=>{},remove:()=>{}}}); closeModal('confirmModal'); renderTab(currentTab)" style="padding:8px 16px;border-radius:20px;border:2px solid #d1fae5;background:#d1fae5;color:#065f46;font-weight:600;cursor:pointer">✅ Xong</button>
+    </div>`;
+  document.getElementById('confirmOkBtn').style.display = 'none';
+  openModal('confirmModal');
+}
+
+// Fix status update from button clicks
+function updateStatus(id, newStatus, sel){
+  const o = orders.find(o=>o.id===id);
+  if(!o) return;
+  o.status = newStatus;
+  if(sel && sel.className !== undefined && typeof sel.className === 'string'){
+    sel.className = 'status-select '+newStatus;
+  }
+  updateBadges();
+  showToast('Đã cập nhật: '+{wait:'⏳ Chờ SX',running:'🔄 Đang SX',done:'✅ Xong'}[newStatus]);
+  if(currentTab === 'dashboard') setTimeout(()=>renderTab('dashboard'),300);
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+  if(id==='confirmModal'){
+    document.getElementById('confirmOkBtn').style.display = '';
+    document.getElementById('confirmOkBtn').style.background = '';
+    document.getElementById('confirmOkBtn').style.borderColor = '';
+  }
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click', e=>{
+    if(e.target === el) closeModal(el.id);
+  });
+});
+
+// ── USER MENU ──
+function toggleUserMenu(){
+  document.getElementById('userMenu').classList.toggle('open');
+}
+function closeMenu(){
+  document.getElementById('userMenu').classList.remove('open');
+}
+document.addEventListener('click', e=>{
+  const menu = document.getElementById('userMenu');
+  if(!menu.contains(e.target) && e.target.id !== 'avatarBtn'){
+    menu.classList.remove('open');
+  }
+});
+
+// ── TOAST ──
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ── SERVICE WORKER ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+
+// ── KG AUTO-CALC ──
+['fThick','fWidth','fLen','fQty'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', ()=>{
+    const t=parseFloat(document.getElementById('fThick').value)||0;
+    const w=parseFloat(document.getElementById('fWidth').value)||0;
+    const l=parseFloat(document.getElementById('fLen').value)||0;
+    const q=parseInt(document.getElementById('fQty').value)||0;
+    if(t&&w&&l&&q){
+      const kg = (t/1000 * w/1000 * l/1000 * q * 8.9).toFixed(2);
+      document.getElementById('fKg').value = kg;
+    }
+  });
+});
+</script>
+</body>
+</html>

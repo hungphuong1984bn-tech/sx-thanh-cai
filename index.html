@@ -1,11 +1,4 @@
-python3 << 'EOF'
-parts = []
-for f in ['app-part1.js','app-part2.js','app-part3.js','app-part4.js']:
-    with open(f'/home/claude/sx-app/{f}') as fp:
-        parts.append(fp.read())
-combined_js = '\n'.join(parts)
-
-html = '''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -690,8 +683,3 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').cat
 </script>
 </body>
 </html>'''
-
-with open('/home/claude/sx-app/index.html', 'w', encoding='utf-8') as f:
-    f.write(html)
-print("HTML assembled. Size:", len(html), "chars")
-EOF

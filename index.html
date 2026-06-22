@@ -268,25 +268,75 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 /* ── REPORT ── */
 .progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
 .progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--brand),var(--brand3));transition:width .5s}
+/* Progress inline trong card */
+.card-progress{padding:6px 14px 4px;display:flex;flex-direction:column;gap:4px}
+.card-progress-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card-progress-lbl{font-size:11.5px;font-weight:600;color:var(--text3)}
+.card-progress-val{font-size:13px;font-weight:800;color:var(--brand)}
+.card-progress-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.card-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#3b82f6,#10b981);transition:width .4s}
+/* Inline input trong card */
+.card-inline-inp{display:flex;gap:6px;padding:6px 14px;align-items:center;flex-wrap:wrap;border-top:1px dashed var(--border)}
+.card-inline-inp label{font-size:11.5px;font-weight:600;color:var(--text3);white-space:nowrap}
+.card-inline-inp input{flex:1;min-width:80px;padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;background:#fff;color:var(--text)}
+.card-inline-inp input:focus{border-color:var(--brand2)}
+.card-inline-inp button{padding:5px 10px;border-radius:7px;border:none;background:var(--brand);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.card-inline-inp button:active{opacity:.8}
+/* Mat list */
+.mat-list{padding:4px 14px 6px;display:flex;gap:5px;flex-wrap:wrap}
+.mat-chip{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;color:var(--text2)}
+.mat-chip button{border:none;background:none;cursor:pointer;color:var(--red-m);font-size:14px;line-height:1;padding:0 0 0 2px}
 
+/* ══ DESKTOP RESPONSIVE ══════════════════════════════════════ */
 @media(min-width:700px){
   .bottom-nav{display:none!important}
-  .sidebar{position:relative;left:0!important;width:260px;box-shadow:none;border-right:1px solid var(--border);height:100%}
+  .sidebar{position:relative;left:0!important;width:260px;box-shadow:none;border-right:1px solid var(--border);height:100%;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%)}
   .sidebar-overlay{display:none!important}
   #appScreen{flex-direction:row}
   .app-body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-  .main-content{max-width:720px;margin:0 auto;padding:16px}
-  #fab{bottom:24px;right:24px;width:60px;height:60px;font-size:28px}
-  .stats-grid{grid-template-columns:repeat(4,1fr)}
-  .modal-box{border-radius:16px;max-width:520px;margin:auto}
+  .main-wrap{padding-bottom:24px}
+  .main-content{max-width:900px;margin:0 auto;padding:20px 24px}
+  .main-content > * + *{margin-top:14px}
+  #fab{bottom:28px;right:28px;width:60px;height:60px;font-size:28px;box-shadow:0 6px 24px rgba(30,64,175,.45)}
+  .stats-grid{grid-template-columns:repeat(4,1fr);gap:12px}
+  .stat-card{padding:18px;border-radius:14px}
+  .stat-num{font-size:34px}
+  .modal-box{border-radius:16px;max-width:560px;margin:auto;padding:24px 28px 36px}
   .modal{align-items:center}
   .kh-summary{grid-template-columns:repeat(3,1fr)}
-  .card{max-width:100%}
+  .card{max-width:100%;border-radius:14px}
+  .card-customer{font-size:16px}
+  .spec-grid{grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 16px 6px}
+  .spec-box{padding:8px 6px;border-radius:10px}
+  .spec-box-val{font-size:16px}
+  .spec-box-lbl{font-size:10px}
+  .spec-row{padding:4px 16px 8px;gap:8px}
+  .spec-tag{font-size:13px;padding:4px 12px}
+  .card-header{padding:14px 16px 0;gap:10px}
+  .card-id{font-size:11px;padding:2px 16px}
+  .card-due{font-size:12.5px;padding:3px 16px 8px}
+  .card-note{font-size:13px;padding:8px 16px}
+  .ca-btn{padding:10px 6px;font-size:13px}
+  .kh-sec-hd span{font-size:14px}
+  .kh-sum-n{font-size:32px}
+  .kh-sum-l{font-size:12px}
+  .kh-sum{padding:18px 12px}
+  .act-row{padding:12px 0}
+  .act-main{font-size:14px}
+  .act-detail{font-size:13px}
+  /* Desktop card grid: 2 cột khi màn hình đủ rộng */
+  .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card-grid .card{margin-top:0!important}
 }
-@media(min-width:1024px){
+@media(min-width:1100px){
   .sidebar{width:280px}
-  .main-content{max-width:860px}
+  .main-content{max-width:1100px}
   .stats-grid{grid-template-columns:repeat(4,1fr)}
+  .card-grid{grid-template-columns:1fr 1fr}
+}
+@media(min-width:1400px){
+  .main-content{max-width:1300px}
+  .card-grid{grid-template-columns:repeat(3,1fr)}
 }
 </style>
 </head>
@@ -368,7 +418,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       </button>
       <button class="sb-item" id="sbi-dorDang" onclick="goTab('dorDang')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        Đơn Mới <span class="sb-badge" id="sbBadge" style="display:none">0</span>
+        Đơn đang làm <span class="sb-badge" id="sbBadge" style="display:none">0</span>
       </button>
       <button class="sb-item" id="sbi-keHoach" onclick="goTab('keHoach')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -462,6 +512,36 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
 <!-- TOAST -->
 <div id="toast"></div>
+
+<!-- Progress Modal -->
+<div class="modal" id="progressModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="progressModalTitle">Cập nhật tiến độ</div>
+    <div id="progressErr" class="modal-err"></div>
+    <div class="field">
+      <div class="field-lbl">Số thanh đã chạy</div>
+      <input id="pmDoneQty" class="field-inp" type="number" min="0" placeholder="0">
+      <div style="font-size:11.5px;color:var(--text3);margin-top:4px" id="pmQtyHint"></div>
+    </div>
+    <div class="field">
+      <div class="field-lbl">Mã nguyên liệu đầu vào</div>
+      <div style="display:flex;gap:8px">
+        <input id="pmMatCode" class="field-inp" placeholder="VD: NL-001, Cuộn A3..." style="flex:1">
+        <button onclick="pmAddMat()" style="padding:0 14px;border-radius:var(--r-sm);border:none;background:var(--brand);color:#fff;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">+ Thêm</button>
+      </div>
+      <div id="pmMatList" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px"></div>
+    </div>
+    <div class="field">
+      <div class="field-lbl">Ghi chú tiến độ</div>
+      <input id="pmNote" class="field-inp" placeholder="VD: Đã cắt xong lô 1...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('progressModal')">Huỷ</button>
+      <button class="btn btn-primary" onclick="saveProgress()">💾 Lưu tiến độ</button>
+    </div>
+  </div>
+</div>
 
 <!-- PWA PROMPT -->
 <div class="pwa-bar" id="pwaBar">
@@ -1105,10 +1185,12 @@ function orderCard(o, showStatus=true){
     </div>
     ${o.deliveryDate?`<div class="card-due${overdue?' overdue':''}">📅 Hạn giao: ${fmtDate(o.deliveryDate)}</div>`:''}
     ${o.note?`<div class="card-note">📝 ${o.note}</div>`:''}
+    ${renderProgressBar(o)}
     ${canStatus?`<div class="card-actions">
       <button class="ca-btn${s==='pending'?' active-wait':''}" onclick="setStatus('${o.id}','pending')">⏳ Chờ SX</button>
       <button class="ca-btn${s==='running'?' active-run':''}" onclick="setStatus('${o.id}','running')">⚙️ Đang chạy</button>
       <button class="ca-btn${s==='done'?' active-done':''}" onclick="setStatus('${o.id}','done')">✅ Xong</button>
+      <button class="ca-btn" style="color:var(--brand);font-size:11px" onclick="openProgress('${o.id}')">📊</button>
       ${canEdit?`<button class="ca-btn" onclick="editOrder('${o.id}')">✏️</button><button class="ca-btn danger" onclick="deleteOrder('${o.id}')">🗑</button>`:''}
     </div>`:''}
     ${!canStatus&&canEdit?`<div class="card-actions">
@@ -1194,7 +1276,7 @@ function renderDorDang(){
       <button class="chip${filterStatus==='running'?' active':''}" onclick="filterStatus='running';renderDorDang()">⚙️ Đang chạy</button>
     </div>
     ${searchQ?`<div style="font-size:12px;color:var(--text3);padding:2px 0 4px">Kết quả: <b>${count}</b> đơn</div>`:''}
-    ${list.length?list.map(o=>orderCard(o,false)).join(''):(searchQ
+    ${list.length?`<div class="card-grid">`+list.map(o=>orderCard(o,false)).join('')+`</div>`:(searchQ
         ? `<div class="empty"><div class="empty-icon">🔍</div>Không tìm thấy "<b>${searchQ}</b>"</div>`
         : '<div class="empty"><div class="empty-icon">✅</div>Không có đơn nào phù hợp</div>')}
   `;
@@ -1272,10 +1354,12 @@ function orderCardKH(o, seq){
     ${s==='done'&&o.startedAt&&o.doneAt?`<div class="card-due" style="color:var(--text3)">⏱ Thời gian SX: <b style="color:var(--brand)">${fmtDuration(o.doneAt-o.startedAt)}</b></div>`:''}
     ${s==='running'&&o.startedAt?`<div class="card-due" style="color:var(--brand3)">▶ Bắt đầu: ${fmtDateTime(o.startedAt)}</div>`:''}
     ${o.note?`<div class="card-note">📝 ${o.note}</div>`:''}
+    ${renderProgressBar(o)}
     ${canStatus?`<div class="card-actions">
       <button class="ca-btn${s==='pending'?' active-wait':''}" onclick="setStatus('${o.id}','pending')">⏳ Chờ SX</button>
       <button class="ca-btn${s==='running'?' active-run':''}" onclick="setStatus('${o.id}','running')">⚙️ Đang chạy</button>
       <button class="ca-btn${s==='done'?' active-done':''}" onclick="setStatus('${o.id}','done')">✅ Xong</button>
+      <button class="ca-btn" style="color:var(--brand);font-size:11px" onclick="openProgress('${o.id}')">📊 Tiến độ</button>
       ${canEdit?`<button class="ca-btn" onclick="editOrder('${o.id}')">✏️</button><button class="ca-btn danger" onclick="deleteOrder('${o.id}')">🗑</button>`:''}
     </div>`:''}
   </div>`;
@@ -1469,6 +1553,75 @@ function editOrder(id){
   $('orderErr').style.display='none';
   openModal('orderModal');
 }
+// ── PROGRESS (Tiến độ sản xuất) ──────────────────────────────
+let _progressOrderId = null;
+let _pmMats = [];
+
+function openProgress(id){
+  const o = DB.orders.find(x=>x.id===id); if(!o) return;
+  _progressOrderId = id;
+  _pmMats = o.matCodes ? [...o.matCodes] : [];
+  document.getElementById('progressModalTitle').textContent = `Tiến độ: ${o.customer||''}`;
+  document.getElementById('pmDoneQty').value = o.doneQty||0;
+  document.getElementById('pmQtyHint').textContent = `Tổng đơn: ${o.qty||0} thanh`;
+  document.getElementById('pmNote').value = o.progressNote||'';
+  document.getElementById('progressErr').style.display='none';
+  renderPmMats();
+  openModal('progressModal');
+}
+
+function renderPmMats(){
+  const el = document.getElementById('pmMatList'); if(!el) return;
+  el.innerHTML = _pmMats.map((m,i)=>
+    `<span class="mat-chip">${m}<button onclick="_pmMats.splice(${i},1);renderPmMats()">×</button></span>`
+  ).join('');
+}
+
+function pmAddMat(){
+  const inp = document.getElementById('pmMatCode');
+  const v = inp.value.trim(); if(!v) return;
+  if(!_pmMats.includes(v)) _pmMats.push(v);
+  inp.value='';
+  renderPmMats();
+}
+
+function saveProgress(){
+  const doneQty = parseInt(document.getElementById('pmDoneQty').value)||0;
+  const note = document.getElementById('pmNote').value.trim();
+  const o = DB.orders.find(x=>x.id===_progressOrderId); if(!o) return;
+  if(doneQty > (o.qty||0)){
+    const e=document.getElementById('progressErr');
+    e.textContent=`Số thanh đã chạy (${doneQty}) không thể lớn hơn tổng đơn (${o.qty||0})`;
+    e.style.display='block'; return;
+  }
+  const old = {doneQty:o.doneQty||0, matCodes:[...(o.matCodes||[])]};
+  o.doneQty = doneQty;
+  o.matCodes = [..._pmMats];
+  o.progressNote = note;
+  log('Cập nhật tiến độ',`${o.customer} · Đã chạy: ${doneQty}/${o.qty} thanh`,_progressOrderId,old,{doneQty,matCodes:_pmMats});
+  closeModal('progressModal');
+  renderTab(currentTab);
+  showToast(`✅ Đã lưu: ${doneQty}/${o.qty||0} thanh`);
+  saveOrders();
+}
+
+// Helper hiển thị progress bar
+function renderProgressBar(o){
+  const qty=o.qty||0; const done=o.doneQty||0;
+  if(!qty||o.status==='pending') return '';
+  const pct=Math.min(100,Math.round(done/qty*100));
+  const color=pct>=100?'var(--green-m)':pct>=50?'var(--brand3)':'var(--amber-m)';
+  return `<div class="card-progress">
+    <div class="card-progress-top">
+      <span class="card-progress-lbl">Tiến độ sản xuất</span>
+      <span class="card-progress-val" style="color:${color}">${done}/${qty} thanh (${pct}%)</span>
+    </div>
+    <div class="card-progress-bar"><div class="card-progress-fill" style="width:${pct}%;background:${pct>=100?'var(--green-m)':''}"></div></div>
+    ${o.matCodes&&o.matCodes.length?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">${o.matCodes.map(m=>`<span class="mat-chip">🏷 ${m}</span>`).join('')}</div>`:''}
+    ${o.progressNote?`<div style="font-size:11.5px;color:var(--text3);margin-top:3px">📋 ${o.progressNote}</div>`:''}
+  </div>`;
+}
+
 function saveOrder(){
   const customer=$('ofCust').value.trim();
   if(!customer){ $('orderErr').textContent='Nhập tên khách hàng'; $('orderErr').style.display='block'; return; }

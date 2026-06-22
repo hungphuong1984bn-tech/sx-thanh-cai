@@ -418,7 +418,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       </button>
       <button class="sb-item" id="sbi-dorDang" onclick="goTab('dorDang')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        Đơn Mới <span class="sb-badge" id="sbBadge" style="display:none">0</span>
+        Đơn đang làm <span class="sb-badge" id="sbBadge" style="display:none">0</span>
       </button>
       <button class="sb-item" id="sbi-keHoach" onclick="goTab('keHoach')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -1366,6 +1366,7 @@ function orderCardKH(o, seq){
 }
 
 let _khFilter = 'all'; // 'all' | 'pending' | 'running' | 'done'
+let khSearchQ = ''; // search query cho Kế hoạch
 
 function setKhFilter(f){
   _khFilter = f;
@@ -1378,9 +1379,14 @@ function setKhFilter(f){
 }
 
 function renderKeHoach(){
+  const khInp = document.getElementById('khSearch');
+  if(khInp) khSearchQ = khInp.value;
+
   const priSort=(a,b)=>parseInt((a.priority||'GẤP 9').replace('GẤP ',''))-parseInt((b.priority||'GẤP 9').replace('GẤP ',''));
-  const running=DB.orders.filter(o=>o.status==='running'||o.status==='cutting').sort(priSort);
-  const waiting=DB.orders.filter(o=>o.status==='pending').sort(priSort);
+  const allActive = DB.orders.filter(o=>o.status!=='done');
+  const filtered = khSearchQ ? allActive.filter(o=>matchSearch(o,khSearchQ)) : allActive;
+  const running=filtered.filter(o=>o.status==='running'||o.status==='cutting').sort(priSort);
+  const waiting=filtered.filter(o=>o.status==='pending').sort(priSort);
   // Đơn done → chuyển sang tab "Hoàn thành", KHÔNG hiện ở Kế hoạch
   const done=[];  // bỏ section done khỏi Kế hoạch SX
 
@@ -1401,6 +1407,10 @@ function renderKeHoach(){
   const showDone  = false; // Đơn done có tab riêng
 
   $('mc').innerHTML=`
+    <div class="search-wrap" style="margin-bottom:8px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-inp" id="khSearch" type="search" placeholder="🔍 Tìm khách hàng, PO, mã..." value="${khSearchQ}" autocomplete="off">
+    </div>
     <div class="kh-summary">
       <button class="kh-sum" style="${wA}" onclick="setKhFilter(_khFilter==='pending'?'all':'pending')">
         <div class="kh-sum-n wait-c">${waiting.length}</div>
@@ -1419,12 +1429,32 @@ function renderKeHoach(){
     ${showWait?sec('kh-sec-wait','⏳','Chờ sản xuất'         ,waiting,true ):''}
     <!-- Đơn hoàn thành xem tại tab Hoàn thành -->
   `;
+  // Search listener
+  const ki=document.getElementById('khSearch');
+  if(ki){ ki.focus(); const v=ki.value; ki.value=''; ki.value=v; ki.addEventListener('input',()=>renderKeHoach()); }
 }
 
 // Hoàn thành
+let htSearchQ = ''; // search query cho Hoàn thành
+
 function renderHoanThanh(){
-  const list=DB.orders.filter(o=>o.status==='done').sort((a,b)=>b.doneAt-a.doneAt);
-  $('mc').innerHTML=`<div class="sec-title">Đơn đã hoàn thành (${list.length})</div>${list.length?list.map(o=>orderCardKH(o,null)).join(''):'<div class="empty"><div class="empty-icon">📦</div>Chưa có đơn hoàn thành</div>'}`;
+  const htInp = document.getElementById('htSearch');
+  if(htInp) htSearchQ = htInp.value;
+  let list = DB.orders.filter(o=>o.status==='done').sort((a,b)=>b.doneAt-a.doneAt);
+  if(htSearchQ) list = list.filter(o=>matchSearch(o,htSearchQ));
+
+  $('mc').innerHTML=`
+    <div class="search-wrap" style="margin-bottom:8px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-inp" id="htSearch" type="search" placeholder="🔍 Tìm trong đơn đã hoàn thành..." value="${htSearchQ}" autocomplete="off">
+    </div>
+    <div class="sec-title">Hoàn thành (${list.length}${htSearchQ?' kết quả':''})</div>
+    ${list.length
+      ? `<div class="card-grid">${list.map(o=>orderCardKH(o,null)).join('')}</div>`
+      : `<div class="empty"><div class="empty-icon">${htSearchQ?'🔍':'📦'}</div>${htSearchQ?`Không tìm thấy "${htSearchQ}"`:'Chưa có đơn hoàn thành'}</div>`}
+  `;
+  const hi=document.getElementById('htSearch');
+  if(hi){ hi.focus(); const v=hi.value; hi.value=''; hi.value=v; hi.addEventListener('input',()=>renderHoanThanh()); }
 }
 
 // Báo cáo
@@ -1461,28 +1491,74 @@ function renderBaoCao(){
 
 // Nhật ký
 const ACT_ICO={'Đăng nhập':'🔑','Đăng xuất':'🚪','Thêm đơn':'🆕','Sửa đơn':'✏️','Xóa đơn':'🗑️','Đang chạy':'⚙️','Xong':'✅','Chờ SX':'⏳','Sửa TK':'👤','Thêm TK':'➕','Xóa TK':'🗑️','Đổi MK':'🔐','Đổi MK TK':'🔐'};
+// Format before/after thành dạng dễ đọc
+function fmtLogChange(obj){
+  if(!obj) return '';
+  if(typeof obj !== 'object') return String(obj);
+  const labelMap = {
+    status: v=>({pending:'⏳ Chờ SX',running:'⚙️ Đang chạy',done:'✅ Xong',cutting:'⚙️ Đang chạy'}[v]||v),
+    customer: v=>`Khách: ${v}`,
+    priority: v=>`Ưu tiên: ${v}`,
+    doneQty: v=>`Đã chạy: ${v} thanh`,
+    matCodes: v=>v&&v.length?`Mã NL: ${v.join(', ')}`:'',
+    note: v=>v?`Ghi chú: ${v}`:'',
+    role: v=>({admin:'👑 Admin',staff:'⚙️ Nhân viên',viewer:'👁 Xem'}[v]||v),
+  };
+  return Object.entries(obj)
+    .filter(([k,v])=>v!==null&&v!==undefined&&v!=='')
+    .map(([k,v])=>{ const f=labelMap[k]; return f?f(v):`${k}: ${Array.isArray(v)?v.join(', '):v}`; })
+    .filter(Boolean).join(' · ');
+}
+
+let _logSearchQ = '';
+
 function renderNhatKy(){
   actLog.forEach(l=>l.read=true); logSave(); updateLogBadge();
+  const si=document.getElementById('logSearch');
+  if(si) _logSearchQ=si.value;
+
+  let list=actLog.slice(0,300);
+  if(_logSearchQ){
+    const q=_logSearchQ.toLowerCase();
+    list=list.filter(l=>(l.action||'').toLowerCase().includes(q)||(l.detail||'').toLowerCase().includes(q)||(l.user||'').toLowerCase().includes(q)||(l.orderId||'').toLowerCase().includes(q));
+  }
+
   $('mc').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div class="sec-title">Nhật ký (${actLog.length})</div>
       ${isAdmin()?`<button onclick="clearLog()" style="font-size:12px;color:var(--red-m);border:1px solid var(--red-l);background:var(--red-l);padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600">Xoá log</button>`:''}
     </div>
-    ${actLog.length===0?'<div class="empty"><div class="empty-icon">📋</div>Chưa có hoạt động</div>':actLog.slice(0,200).map(l=>{
-      const dt=new Date(l.ts);
-      const t=dt.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      return `<div class="act-row">
-        <div class="act-icon-wrap">${ACT_ICO[l.action]||'📌'}</div>
-        <div class="act-body">
-          <div class="act-main">${l.action}</div>
-          <div class="act-detail">${l.detail||''}</div>
-          ${l.before||l.after?`<div class="act-detail" style="color:var(--amber)">Trước: ${JSON.stringify(l.before||'')}</div><div class="act-detail" style="color:var(--green-m)">Sau: ${JSON.stringify(l.after||'')}</div>`:''}
-          <div class="act-meta">👤 ${l.user} · ${l.role==='admin'?'👑':'⚙️'} · 🕐 ${t}</div>
-          ${l.orderId?`<div class="act-oid">🔖 ${l.orderId}</div>`:''}
-        </div>
-      </div>`;
-    }).join('')}
+    <div class="search-wrap" style="margin-bottom:8px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-inp" id="logSearch" type="search" placeholder="Tìm theo thao tác, người dùng, mã đơn..." value="${_logSearchQ}" autocomplete="off">
+    </div>
+    ${list.length===0
+      ? '<div class="empty"><div class="empty-icon">📋</div>'+(_logSearchQ?`Không tìm thấy "${_logSearchQ}"`:'Chưa có hoạt động')+'</div>'
+      : list.map(l=>{
+          const dt=new Date(l.ts);
+          const t=dt.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+          const bTxt=fmtLogChange(l.before);
+          const aTxt=fmtLogChange(l.after);
+          const aSt=l.after&&l.after.status;
+          const aCol=aSt?({pending:'var(--amber-m)',running:'var(--brand)',done:'var(--green-m)'}[aSt]||'var(--green-m)'):'var(--green-m)';
+          return `<div class="act-row">
+            <div class="act-icon-wrap">${ACT_ICO[l.action]||'📌'}</div>
+            <div class="act-body">
+              <div class="act-main">${l.action}</div>
+              ${l.detail?`<div class="act-detail">${l.detail}</div>`:''}
+              ${(bTxt||aTxt)?`<div style="margin-top:4px;display:flex;flex-direction:column;gap:3px">
+                ${bTxt?`<div style="font-size:11px;background:var(--amber-l);padding:3px 8px;border-radius:5px;border-left:2px solid var(--amber-m);color:var(--amber)">← ${bTxt}</div>`:''}
+                ${aTxt?`<div style="font-size:11px;background:var(--green-l);padding:3px 8px;border-radius:5px;border-left:2px solid var(--green-m);color:${aCol}">→ ${aTxt}</div>`:''}
+              </div>`:''}
+              <div class="act-meta" style="margin-top:3px">👤 <b>${l.user}</b> · ${l.role==='admin'?'👑':'⚙️'} · 🕐 ${t}</div>
+              ${l.orderId?`<div class="act-oid">🔖 ${l.orderId}</div>`:''}
+            </div>
+          </div>`;
+        }).join('')
+    }
   `;
+  const ni=document.getElementById('logSearch');
+  if(ni){ ni.addEventListener('input',()=>renderNhatKy()); }
 }
 function clearLog(){ confirm2('Xoá nhật ký','Xoá toàn bộ nhật ký thao tác?',()=>{ actLog=[]; saveLog(); renderNhatKy(); showToast('Đã xoá nhật ký'); }); }
 
@@ -1598,7 +1674,7 @@ function saveProgress(){
   o.doneQty = doneQty;
   o.matCodes = [..._pmMats];
   o.progressNote = note;
-  log('Cập nhật tiến độ',`${o.customer} · Đã chạy: ${doneQty}/${o.qty} thanh`,_progressOrderId,old,{doneQty,matCodes:_pmMats});
+  log('Cập nhật tiến độ',`${o.customer} · ${o.priority||''} · Đã chạy: ${doneQty}/${o.qty||0} thanh`,_progressOrderId,{doneQty:old.doneQty,matCodes:old.matCodes,note:o.progressNote},{doneQty,matCodes:[..._pmMats],note});
   closeModal('progressModal');
   renderTab(currentTab);
   showToast(`✅ Đã lưu: ${doneQty}/${o.qty||0} thanh`);
@@ -1665,7 +1741,11 @@ function setStatus(id, newStatus){
   if(newStatus==='done') o.doneAt=Date.now();
   if(newStatus!=='done') delete o.doneAt;
   const lb={pending:'Chờ SX',running:'Đang chạy',done:'Xong'};
-  log(lb[newStatus]||newStatus,`${o.customer} · ${o.priority||''}`,id,{status:before},{status:newStatus});
+  log(lb[newStatus]||newStatus,
+    `${o.customer} · ${o.priority||''} · ${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm · ${o.qty||0} thanh`,
+    id,
+    {status:before, customer:o.customer, priority:o.priority},
+    {status:newStatus, customer:o.customer, priority:o.priority});
   // UI ngay lập tức
   renderTab(currentTab); updateBadges();
   showToast({pending:'⏳ Chờ sản xuất',running:'⚙️ Đang chạy!',done:'✅ Hoàn thành!'}[newStatus]||'');

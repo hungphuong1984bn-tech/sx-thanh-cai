@@ -1908,8 +1908,68 @@ function installPWA(){
   else alert('iPhone: Nhấn Share → "Thêm vào màn hình chính"\nChrome PC: Nhấn nút ⊕ trên thanh địa chỉ');
 }
 
-// Service Worker
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+// Service Worker + Auto-update
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js')
+    .then(reg=>{
+      // Kiểm tra update SW mỗi 5 phút
+      setInterval(()=>reg.update(), 5*60*1000);
+      // Khi có SW mới sẵn sàng → reload ngay
+      reg.addEventListener('updatefound',()=>{
+        const nw = reg.installing;
+        if(!nw) return;
+        nw.addEventListener('statechange',()=>{
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            // Có bản mới: thông báo và reload
+            showUpdateBanner();
+          }
+        });
+      });
+    }).catch(()=>{});
+
+  // Khi SW mới activate (tab khác đã reload trước)
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!_reloading){ _reloading=true; window.location.reload(); }
+  });
+}
+
+let _reloading = false;
+let _idleTimer = null;
+const IDLE_RELOAD = 5 * 60 * 1000; // 5 phút
+
+// Auto-reload sau 5 phút không tương tác — đảm bảo luôn dùng bản mới nhất
+function resetIdleTimer(){
+  clearTimeout(_idleTimer);
+  _idleTimer = setTimeout(()=>{
+    // Chỉ reload khi không đang dùng modal và không đang gõ
+    const modalOpen = document.querySelector('.modal.open');
+    const focused   = document.activeElement;
+    const isTyping  = focused && (focused.tagName==='INPUT'||focused.tagName==='TEXTAREA'||focused.tagName==='SELECT');
+    if(!modalOpen && !isTyping){
+      window.location.reload();
+    } else {
+      // Đang dùng modal hoặc đang gõ → đợi thêm 2 phút
+      _idleTimer = setTimeout(()=>window.location.reload(), 2*60*1000);
+    }
+  }, IDLE_RELOAD);
+}
+
+// Theo dõi tương tác để reset timer
+['click','touchstart','keydown','scroll'].forEach(ev=>{
+  document.addEventListener(ev, resetIdleTimer, {passive:true});
+});
+resetIdleTimer(); // bắt đầu đếm ngay khi load
+
+// Banner thông báo có bản cập nhật mới
+function showUpdateBanner(){
+  let b = document.getElementById('updateBanner');
+  if(b) return;
+  b = document.createElement('div');
+  b.id = 'updateBanner';
+  b.style.cssText='position:fixed;top:calc(var(--top)+8px);left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap';
+  b.innerHTML='🆕 Có bản cập nhật mới! <button onclick="window.location.reload()" style="background:var(--brand2);color:#fff;border:none;border-radius:7px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">Cập nhật ngay</button><button onclick="this.parentElement.remove()" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1">✕</button>';
+  document.body.appendChild(b);
+}
 </script>
 </body>
 </html>

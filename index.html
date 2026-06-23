@@ -138,10 +138,13 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .ca-btn:active{opacity:.7}
 
 /* ── STATUS BADGES ── */
-.badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
-.b-wait{background:var(--amber-l);color:var(--amber)}
-.b-run{background:#dbeafe;color:var(--brand)}
-.b-done{background:var(--green-l);color:var(--green)}
+.badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.b-wait{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-m)}
+.b-run{background:linear-gradient(135deg,#dbeafe,#eff6ff);color:var(--brand);border:1px solid #93c5fd;animation:pulse-run 2s infinite}
+.b-done{background:linear-gradient(135deg,var(--green-l),#f0fdf4);color:var(--green);border:1px solid #86efac}
+@keyframes pulse-run{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.25)}50%{box-shadow:0 0 0 4px rgba(37,99,235,.08)}}
+/* Đồng hồ số chạy */
+.run-clock{font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;font-family:monospace;background:#0f172a;color:#60a5fa;padding:2px 8px;border-radius:6px;letter-spacing:1px;white-space:nowrap}
 .pri-chip{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
 
 /* ── STATS GRID ── */
@@ -805,6 +808,29 @@ function hashOrders(list){
   return (list||[]).map(o=>o.id+'|'+o.status+'|'+(o.doneAt||0)+'|'+(o.startedAt||0)).join(';');
 }
 
+// ── TỰ XÓA ĐƠN HOÀN THÀNH SAU 30 NGÀY ───────────────────────
+function autoCleanDone(){
+  const DAYS = 30;
+  const cutoff = Date.now() - DAYS * 24 * 60 * 60 * 1000;
+  const before = DB.orders.length;
+  const expired = DB.orders.filter(o=>o.status==='done' && o.doneAt && o.doneAt < cutoff);
+  if(!expired.length) return;
+
+  DB.orders = DB.orders.filter(o=>!(o.status==='done' && o.doneAt && o.doneAt < cutoff));
+  const removed = before - DB.orders.length;
+
+  // Ghi nhật ký
+  expired.forEach(o=>{
+    log('Tự xóa (30 ngày)',
+      `${o.customer||'?'} · Hoàn thành: ${fmtDate(o.doneAt)}`,
+      o.id, {customer:o.customer, doneAt:o.doneAt}, null);
+  });
+
+  saveOrders();
+  showToast(`🗑 Đã tự xóa ${removed} đơn hoàn thành quá 30 ngày`);
+  console.log(`[AutoClean] Xóa ${removed} đơn hết hạn`);
+}
+
 async function initAndStartSync(){
   // Load cache trước
   lsLoad(); logLoad();
@@ -838,6 +864,8 @@ async function initAndStartSync(){
     }
     startPolling();
   }
+  // Tự dọn đơn cũ sau khi dữ liệu đã load
+  autoCleanDone();
   renderTab(currentTab);
   updateBadges();
 }
@@ -1098,6 +1126,26 @@ document.addEventListener('DOMContentLoaded',()=>{
   setInterval(()=>{
     const e=$('clock'); if(e) e.textContent=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   },1000);
+
+  // Đồng hồ đếm thời gian chạy — cập nhật mỗi giây
+  setInterval(()=>{
+    const now=Date.now();
+    DB.orders.forEach(o=>{
+      if((o.status==='running'||o.status==='cutting')&&o.startedAt){
+        const el=document.getElementById('clk-'+o.id);
+        if(!el) return;
+        const ms=now-o.startedAt;
+        const totalSec=Math.floor(ms/1000);
+        const h=Math.floor(totalSec/3600);
+        const m=Math.floor((totalSec%3600)/60);
+        const s=totalSec%60;
+        const hh=h>0?String(h).padStart(2,'0')+':':'';
+        const mm=String(m).padStart(2,'0');
+        const ss=String(s).padStart(2,'0');
+        el.textContent='⏱ '+hh+mm+':'+ss;
+      }
+    });
+  },1000);
 });
 
 // ════════════════════════════════════════════════════════════
@@ -1159,7 +1207,7 @@ function orderCard(o, showStatus=true){
   const si=statusInfo(s);
   const pc=PRI_COLOR[o.priority]||'#64748b';
   const overdue=s!=='done'&&o.deliveryDate&&new Date(o.deliveryDate)<new Date();
-  const elapsed=o.startedAt&&s==='running'?'⏱'+Math.floor((Date.now()-o.startedAt)/60000)+'p':'';
+  const hasTimer=o.startedAt&&s==='running';
   const canEdit = isAdmin();
   const canStatus = isStaff() && showStatus;
 
@@ -1167,7 +1215,7 @@ function orderCard(o, showStatus=true){
     <div class="card-header">
       <span class="badge ${si.cls}">${si.label}</span>
       <span class="spec-tag pri" style="background:${pc}20;color:${pc}">${o.priority||'—'}</span>
-      ${elapsed?`<span style="font-size:11px;color:var(--brand3);font-weight:700;margin-left:auto;background:#dbeafe;padding:2px 8px;border-radius:6px">${elapsed}</span>`:''}
+      ${hasTimer?`<span class="run-clock" id="clk-${o.id}">⏱ --:--</span>`:''}
       ${overdue?`<span style="font-size:11px;color:var(--red-m);font-weight:700;margin-left:auto;background:var(--red-l);padding:2px 8px;border-radius:6px">⚠️ QUÁ HẠN</span>`:''}
     </div>
     <div class="card-customer">${o.customer||'—'}${o.po?`<small>PO: ${o.po}</small>`:''}</div>
@@ -1322,8 +1370,7 @@ function orderCardKH(o, seq){
   const s=o.status==='cutting'?'running':o.status;
   const pc=PRI_COLOR[o.priority]||'#64748b';
   const overdue=s!=='done'&&o.deliveryDate&&new Date(o.deliveryDate)<new Date();
-  const elapsedMin=o.startedAt&&s==='running'?Math.floor((Date.now()-o.startedAt)/60000):0;
-  const elapsedStr=elapsedMin>0?(elapsedMin>=60?Math.floor(elapsedMin/60)+'g'+(elapsedMin%60)+'p':elapsedMin+'p'):'';
+  const hasTimer=o.startedAt&&s==='running';
   const canStatus=isStaff();
   const canEdit=isAdmin();
   const si=statusInfo(s);
@@ -1333,7 +1380,7 @@ function orderCardKH(o, seq){
       ${seq!=null?`<span style="width:26px;height:26px;border-radius:50%;background:${pc};color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${seq}</span>`:''}
       <span class="badge ${si.cls}">${si.label}</span>
       <span class="spec-tag pri" style="background:${pc}20;color:${pc}">${o.priority||'—'}</span>
-      ${elapsedStr?`<span style="font-size:11px;color:var(--brand3);font-weight:700;margin-left:auto;background:#dbeafe;padding:2px 8px;border-radius:6px">⏱ ${elapsedStr}</span>`:''}
+      ${hasTimer?`<span class="run-clock" id="clk-${o.id}">⏱ --:--</span>`:''}
       ${overdue?`<span style="font-size:11px;color:var(--red-m);font-weight:700;margin-left:auto;background:var(--red-l);padding:2px 8px;border-radius:6px">⚠️ QUÁ HẠN</span>`:''}
     </div>
     <div class="card-customer">${o.customer||'—'}${o.po?`<small>PO: ${o.po}</small>`:''}</div>
@@ -1393,7 +1440,7 @@ function renderKeHoach(){
   function sec(id, icon, title, list, showSeq){
     const hd=`<div class="kh-sec-hd" id="${id}"><span>${icon} ${title}</span><span class="kh-count">${list.length}</span></div>`;
     if(!list.length) return hd+`<div class="empty" style="padding:16px 0 8px">Không có đơn nào</div>`;
-    return hd+list.map((o,i)=>orderCardKH(o, showSeq?i+1:null)).join('');
+    return hd+`<div class="card-grid">`+list.map((o,i)=>orderCardKH(o, showSeq?i+1:null)).join('')+`</div>`;
   }
 
   // Highlight tab đang chọn
@@ -1448,7 +1495,7 @@ function renderHoanThanh(){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input class="search-inp" id="htSearch" type="search" placeholder="🔍 Tìm trong đơn đã hoàn thành..." value="${htSearchQ}" autocomplete="off">
     </div>
-    <div class="sec-title">Hoàn thành (${list.length}${htSearchQ?' kết quả':''})</div>
+    <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between">Hoàn thành (${list.length}${htSearchQ?' kết quả':''})<span style="font-size:10.5px;color:var(--text4);font-weight:400">🗑 Tự xóa sau 30 ngày</span></div>
     ${list.length
       ? `<div class="card-grid">${list.map(o=>orderCardKH(o,null)).join('')}</div>`
       : `<div class="empty"><div class="empty-icon">${htSearchQ?'🔍':'📦'}</div>${htSearchQ?`Không tìm thấy "${htSearchQ}"`:'Chưa có đơn hoàn thành'}</div>`}

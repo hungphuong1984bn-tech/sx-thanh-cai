@@ -254,8 +254,56 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .icon-btn.del{background:var(--red-l);color:var(--red-m)}
 
 /* ── TOAST ── */
-#toast{position:fixed;top:calc(var(--top)+10px);left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:9px 18px;border-radius:30px;font-size:13px;font-weight:600;z-index:999;white-space:nowrap;pointer-events:none;display:none;box-shadow:var(--sh2);max-width:90vw;text-align:center}
+/* ── TOAST ── */
+#toast{position:fixed;top:calc(var(--top)+var(--safe-t)+12px);left:50%;transform:translateX(-50%) translateY(-8px);background:#0f172a;color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:1100;white-space:nowrap;pointer-events:none;opacity:0;box-shadow:0 4px 20px rgba(0,0,0,.35);max-width:92vw;text-align:center;transition:opacity .2s,transform .2s;display:flex;align-items:center;gap:8px}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{background:#991b1b}
+#toast.ok{background:#065f46}
+#toast.info{background:#1e3a8a}
+
+/* ── BELL BUTTON ── */
+.bell-btn{position:relative;background:none;border:none;cursor:pointer;padding:6px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:background .12s;flex-shrink:0}
+.bell-btn:active{background:var(--bg)}
+.bell-btn svg{width:22px;height:22px;stroke-width:1.8;transition:transform .2s}
+.bell-btn.ring svg{animation:bell-ring .5s ease}
+@keyframes bell-ring{0%,100%{transform:rotate(0)}20%{transform:rotate(-20deg)}40%{transform:rotate(20deg)}60%{transform:rotate(-12deg)}80%{transform:rotate(8deg)}}
+.bell-badge{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:var(--red-m);color:#fff;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center;border:2px solid #fff;line-height:1}
+.bell-badge.show{display:flex}
+
+/* ── NOTIFICATION PANEL ── */
+.notif-panel{position:fixed;top:calc(var(--top)+var(--safe-t));right:0;width:min(360px,100vw);height:calc(100dvh - var(--top) - var(--safe-t));background:#fff;z-index:500;box-shadow:-4px 0 24px rgba(0,0,0,.15);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.notif-panel.open{transform:translateX(0)}
+.notif-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:499;display:none;backdrop-filter:blur(2px)}
+.notif-overlay.show{display:block}
+.notif-panel-hd{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:#fff;flex-shrink:0}
+.notif-panel-hd h3{flex:1;font-size:15px;font-weight:800;color:var(--text)}
+.notif-list{flex:1;overflow-y:auto;padding:8px 0}
+.notif-item{display:flex;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative}
+.notif-item.unread{background:#f8faff}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);border-radius:0 2px 2px 0}
+.notif-item:active{background:var(--bg)}
+.notif-item:last-child{border-bottom:none}
+.notif-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--bg)}
+.notif-body{flex:1;min-width:0}
+.notif-title{font-size:13px;font-weight:700;color:var(--text)}
+.notif-desc{font-size:12px;color:var(--text3);margin-top:2px;line-height:1.4}
+.notif-time{font-size:10.5px;color:var(--text4);margin-top:3px}
+.notif-compose{padding:12px 16px;border-top:1px solid var(--border);background:#fff;flex-shrink:0}
+.notif-compose-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:7px}
+.notif-compose-row{display:flex;gap:7px}
+.notif-compose-inp{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none;resize:none;height:40px;color:var(--text)}
+.notif-compose-inp:focus{border-color:var(--brand2)}
+.notif-compose-send{width:40px;height:40px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .12s}
+.notif-compose-send:active{opacity:.8}
+.notif-empty{padding:32px 16px;text-align:center;color:var(--text4);font-size:13px}
+.notif-empty-icon{font-size:36px;margin-bottom:8px}
+
+/* ── HIỆU ỨNG THÔNG BÁO MỚI ── */
+@keyframes notif-pop{0%{transform:translateY(-10px) scale(.9);opacity:0}60%{transform:translateY(2px) scale(1.02)}100%{transform:translateY(0) scale(1);opacity:1}}
+.notif-item.new-anim{animation:notif-pop .35s cubic-bezier(.34,1.56,.64,1) forwards}
+/* Flash toàn màn hình khi admin gửi broadcast */
+@keyframes flash-in{0%{opacity:0}30%{opacity:.12}100%{opacity:0}}
+.notif-flash{position:fixed;inset:0;background:var(--brand);z-index:2000;pointer-events:none;animation:flash-in .6s ease forwards}
 
 /* ── REPORT ── */
 .rpt-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -542,7 +590,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 <button id="fab" onclick="openAddOrder()">+</button>
 
 <!-- TOAST -->
-<div id="toast"></div>
+<div id="toast" aria-live="polite"></div>
 
 <!-- Progress Modal -->
 <div class="modal" id="progressModal">
@@ -580,6 +628,27 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   <div style="flex:1"><div style="font-size:13px;font-weight:700">Cài đặt ứng dụng</div><div style="font-size:11.5px;color:#94a3b8;margin-top:1px">Hoạt động offline, nhanh hơn</div></div>
   <button onclick="installPWA()" style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border:none;border-radius:8px;padding:8px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">Cài</button>
   <button onclick="document.getElementById('pwaBar').style.display='none'" style="border:none;background:none;color:#64748b;font-size:20px;cursor:pointer;padding:2px 4px">✕</button>
+</div>
+
+<!-- NOTIFICATION PANEL OVERLAY -->
+<div class="notif-overlay" id="notifOverlay" onclick="closeNotifPanel()"></div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-panel-hd">
+    <div class="notif-avatar" style="background:#eff6ff;font-size:18px">🔔</div>
+    <h3>Thông báo</h3>
+    <button onclick="markAllRead()" style="font-size:11.5px;color:var(--brand);border:1px solid #bfdbfe;background:#eff6ff;border-radius:7px;padding:4px 10px;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap">Đọc hết</button>
+    <button onclick="closeNotifPanel()" style="border:none;background:var(--bg);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0">✕</button>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+  <div class="notif-compose" id="notifCompose" style="display:none">
+    <div class="notif-compose-title">📢 Gửi thông báo cho cả nhóm</div>
+    <div class="notif-compose-row">
+      <input class="notif-compose-inp" id="notifInp" placeholder="Nhập nội dung..." maxlength="200">
+      <button class="notif-compose-send" onclick="sendBroadcast()">➤</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODALS -->
@@ -943,6 +1012,8 @@ async function doPoll(){
     }
     if(changed){ lsSave(); renderTab(currentTab); updateBadges(); updateOnline(); showToast('🔄 Đã cập nhật dữ liệu'); }
     setSyncDot('ok');
+    // Check broadcast và notif mới từ thiết bị khác
+    await checkBroadcast();
   } catch(e){ setSyncDot('error'); }
 }
 
@@ -1062,13 +1133,191 @@ function setSyncDot(state){
   d.title = state==='ok'?'Đã đồng bộ':state==='saving'?'Đang lưu...':'Lỗi kết nối';
 }
 let _toastT;
+// ════════════════════════════════════════════════════════════
+// NOTIFICATION SYSTEM
+// ════════════════════════════════════════════════════════════
+const NOTIF_KEY = 'sx_notif_v1';
+let notifList = [];
+let _notifUnread = 0;
+
+function notifLoad(){
+  try{ notifList = JSON.parse(localStorage.getItem(NOTIF_KEY)||'[]'); }catch(e){ notifList=[]; }
+}
+function notifSave(){
+  try{ localStorage.setItem(NOTIF_KEY, JSON.stringify(notifList.slice(0,100))); }catch(e){}
+}
+
+function addNotif(type, title, body, tab, fromUser){
+  const n = {
+    id: 'n'+Date.now()+Math.random().toString(36).slice(2,5),
+    ts: Date.now(),
+    type,       // 'order_new'|'order_done'|'order_run'|'broadcast'|'system'
+    title, body,
+    tab: tab||'',
+    from: fromUser||currentUser?.name||'',
+    read: false
+  };
+  notifList.unshift(n);
+  if(notifList.length>100) notifList=notifList.slice(0,100);
+  notifSave();
+  // Đẩy lên Firebase để mọi thiết bị nhận
+  if(fbOk()) fbWrite('/notif', notifList.slice(0,50), 'PUT').catch(()=>{});
+  updateBellBadge();
+  showToast(title, type==='error');
+  animateBell();
+  return n;
+}
+
+function updateBellBadge(){
+  _notifUnread = notifList.filter(n=>!n.read).length;
+  const b=$('bellBadge');
+  if(b){
+    b.textContent = _notifUnread>9?'9+':_notifUnread;
+    b.classList.toggle('show', _notifUnread>0);
+  }
+}
+
+function animateBell(){
+  const b=$('bellBtn'); if(!b) return;
+  b.classList.remove('ring');
+  void b.offsetWidth; // reflow
+  b.classList.add('ring');
+  setTimeout(()=>b.classList.remove('ring'), 600);
+}
+
+function flashScreen(){
+  const f=document.createElement('div');
+  f.className='notif-flash';
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(), 700);
+}
+
+// Mở/đóng panel
+function toggleNotifPanel(){
+  const p=$('notifPanel');
+  if(p.classList.contains('open')) closeNotifPanel();
+  else openNotifPanel();
+}
+function openNotifPanel(){
+  renderNotifList();
+  $('notifPanel').classList.add('open');
+  $('notifOverlay').classList.add('show');
+  // Hiện compose nếu admin
+  const c=$('notifCompose');
+  if(c) c.style.display=isAdmin()?'block':'none';
+}
+function closeNotifPanel(){
+  $('notifPanel').classList.remove('open');
+  $('notifOverlay').classList.remove('show');
+}
+
+// Render danh sách thông báo
+const NOTIF_ICO = {
+  order_new:'📦', order_done:'✅', order_run:'⚙️',
+  broadcast:'📢', system:'ℹ️', error:'❌', warning:'⚠️'
+};
+function renderNotifList(){
+  const el=$('notifList'); if(!el) return;
+  if(!notifList.length){
+    el.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">🔔</div>Chưa có thông báo nào</div>';
+    return;
+  }
+  el.innerHTML = notifList.slice(0,60).map((n,i)=>{
+    const dt = new Date(n.ts);
+    const t = dt.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const ico = NOTIF_ICO[n.type]||'📌';
+    return `<div class="notif-item${n.read?'':' unread'}${i===0?' new-anim':''}" onclick="clickNotif('${n.id}')">
+      <div class="notif-avatar">${ico}</div>
+      <div class="notif-body">
+        <div class="notif-title">${n.title}</div>
+        ${n.body?`<div class="notif-desc">${n.body}</div>`:''}
+        <div class="notif-time">${n.from?`👤 ${n.from} · `:''}🕐 ${t}</div>
+      </div>
+      ${!n.read?'<span style="width:8px;height:8px;border-radius:50%;background:var(--brand);flex-shrink:0;margin-top:4px"></span>':''}
+    </div>`;
+  }).join('');
+}
+
+function clickNotif(id){
+  const n = notifList.find(x=>x.id===id);
+  if(!n) return;
+  n.read=true; notifSave(); updateBellBadge();
+  closeNotifPanel();
+  if(n.tab) goTab(n.tab);
+  renderNotifList();
+}
+function markAllRead(){
+  notifList.forEach(n=>n.read=true);
+  notifSave(); updateBellBadge(); renderNotifList();
+}
+
+// Admin gửi broadcast
+function sendBroadcast(){
+  const inp=$('notifInp'); if(!inp) return;
+  const msg=inp.value.trim(); if(!msg) return;
+  inp.value='';
+  addNotif('broadcast','📢 '+currentUser.name, msg, '', currentUser.name);
+  // Ghi log
+  log('Gửi thông báo', msg, '');
+  flashScreen();
+  showToast('✅ Đã gửi thông báo cho cả nhóm');
+  // Đẩy lên Firebase path /broadcast để poll nhận
+  if(fbOk()) fbWrite('/broadcast', {
+    id:'b'+Date.now(), msg, from:currentUser.name,
+    role:currentUser.role, ts:Date.now()
+  }, 'PUT').catch(()=>{});
+  renderNotifList();
+}
+
+// Poll broadcast từ Firebase (mọi user nhận)
+let _lastBroadcastId = '';
+async function checkBroadcast(){
+  if(!fbOk()||!currentUser) return;
+  try{
+    const bc = await fbRead('/broadcast');
+    if(!bc||!bc.id||bc.id===_lastBroadcastId) return;
+    if(bc.from===currentUser.name && bc.ts>Date.now()-5000) return; // chính mình vừa gửi
+    _lastBroadcastId = bc.id;
+    const n = {
+      id:'b'+bc.ts, ts:bc.ts, type:'broadcast',
+      title:'📢 '+bc.from, body:bc.msg,
+      from:bc.from, read:false, tab:''
+    };
+    notifList.unshift(n);
+    notifSave(); updateBellBadge(); animateBell(); flashScreen();
+    showToast('📢 '+bc.from+': '+bc.msg);
+    pushNotif('📢 '+bc.from, bc.msg);
+  }catch(e){}
+}
+
+// Poll notif từ Firebase (khi thiết bị khác thêm đơn)
+async function checkFirebaseNotif(){
+  if(!fbOk()||!currentUser) return;
+  try{
+    const fbNotif = await fbRead('/notif');
+    if(!Array.isArray(fbNotif)||!fbNotif.length) return;
+    const myIds = new Set(notifList.map(n=>n.id));
+    const newOnes = fbNotif.filter(n=>n&&n.id&&!myIds.has(n.id)&&n.from!==currentUser.name);
+    if(!newOnes.length) return;
+    newOnes.forEach(n=>{ notifList.unshift({...n,read:false}); });
+    notifList.sort((a,b)=>b.ts-a.ts);
+    notifList=notifList.slice(0,100);
+    notifSave(); updateBellBadge(); animateBell();
+    showToast('🔔 Có '+newOnes.length+' thông báo mới');
+  }catch(e){}
+}
+
 function showToast(msg, isErr){
   const t=$('toast'); if(!t) return;
-  t.textContent=msg;
-  t.className=isErr?'err':'';
-  t.style.display='block';
+  // Clear text và thêm nội dung
+  t.innerHTML='';
+  const span=document.createElement('span');
+  span.textContent=msg;
+  t.appendChild(span);
+  t.className=(isErr?'err':'show');
+  if(!isErr) t.classList.add('show');
   clearTimeout(_toastT);
-  _toastT=setTimeout(()=>t.style.display='none',2800);
+  _toastT=setTimeout(()=>t.classList.remove('show'),2800);
 }
 function openModal(id){ $(id).classList.add('open'); }
 function closeModal(id){ $(id).classList.remove('open'); }
@@ -1105,8 +1354,10 @@ function doLogin(){
       log('Đăng nhập','Đăng nhập thành công','');
       const fbCfg=localStorage.getItem(FB_KEY)||'';
       if(!fbCfg) setTimeout(()=>$('fbSetup').style.display='flex',600);
+      notifLoad();
       initAndStartSync().then(()=>updateOnline());
       requestNotif();
+      updateBellBadge();
       goTab('dashboard');
     } else {
       err.textContent='Tên đăng nhập hoặc mật khẩu không đúng';
@@ -1144,8 +1395,10 @@ document.addEventListener('DOMContentLoaded',()=>{
       $('sbRole').textContent = savedUser.role==='admin'?'👑 Quản trị viên':savedUser.role==='staff'?'⚙️ Nhân viên SX':'👁 Xem';
       $('loginScreen').classList.remove('active');
       $('appScreen').classList.add('active');
+      notifLoad();
       initAndStartSync().then(()=>updateOnline());
       requestNotif();
+      updateBellBadge();
       goTab('dashboard');
     } else {
       localStorage.removeItem('sx_session_uid');
@@ -1905,6 +2158,7 @@ function saveOrder(){
     _knownIds.add(newId);
     log('Thêm đơn',`${customer} · ${qty} thanh · ${data.priority}`,newId,null,{customer,qty,priority:data.priority});
     showToast('✅ Đã thêm đơn hàng mới');
+    addNotif('order_new','📦 Đơn mới: '+customer,`${t}×${w}×${l}mm · ${qty} thanh · ${data.priority}`,'keHoach',currentUser?.name);
     pushNotif('📦 Đơn hàng mới!',`${customer} · ${t}×${w}mm · ${qty} thanh`);
   }
   closeModal('orderModal');
@@ -1938,7 +2192,13 @@ function setStatus(id, newStatus){
   showToast({pending:'⏳ Chờ sản xuất',running:'⚙️ Đang chạy!',done:'✅ Hoàn thành!'}[newStatus]||'');
   // Firebase sau
   saveOrders();
-  if(newStatus==='done') pushNotif('✅ Hoàn thành!',`${o.customer} đã xong`);
+  if(newStatus==='done'){
+    pushNotif('✅ Hoàn thành!',`${o.customer} đã xong`);
+    addNotif('order_done','✅ Hoàn thành: '+o.customer,`${o.thickness}×${o.width}×${o.length}mm · ${o.qty} thanh · ${o.priority||''}`,'hoanThanh',currentUser?.name);
+  }
+  if(newStatus==='running'){
+    addNotif('order_run','⚙️ Bắt đầu chạy: '+o.customer,`${o.thickness}×${o.width}×${o.length}mm · ${o.qty} thanh · ${o.priority||''}`,'keHoach',currentUser?.name);
+  }
 }
 
 // ════════════════════════════════════════════════════════════

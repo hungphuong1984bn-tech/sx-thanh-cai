@@ -163,11 +163,54 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 /* Mobile: scroll ngang, mỗi cột rộng 82vw */
 .dash-3col{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;margin:0 -12px;padding-left:12px;padding-right:12px}
 .dash-3col::-webkit-scrollbar{display:none}
-.dash-col{flex:0 0 82vw;min-width:220px;scroll-snap-align:start;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;box-shadow:var(--sh);border:1px solid var(--border)}
+.dash-col{flex:0 0 78vw;min-width:200px;scroll-snap-align:start;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;box-shadow:var(--sh);border:1px solid var(--border)}
 .dash-col-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 13px 9px;background:var(--card);border-bottom:1px solid var(--border)}
 .dash-col-hd-title{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px}
 .dash-col-hd-count{font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px;min-width:24px;text-align:center}
 .dash-col-body{background:var(--card);flex:1;overflow:hidden}
+/* AI Warning Badge */
+.ai-warn{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:4px;width:fit-content}
+.ai-warn.red{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5}
+.ai-warn.amber{background:#fffbeb;color:#b45309;border:1px solid #fcd34d}
+.ai-warn.ok{background:#f0fdf4;color:#16a34a;border:1px solid #86efac}
+/* AI warning block trong card — hiện ở mọi tab */
+.ai-card-warn{margin:6px 14px 2px;border-radius:10px;overflow:hidden;border:none}
+.ai-card-warn-row{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;font-size:12px;font-weight:600;line-height:1.4}
+.ai-card-warn-row.critical{background:linear-gradient(135deg,#fef2f2,#fee2e2);color:#991b1b;border:1.5px solid #fca5a5;border-radius:10px;margin-bottom:3px;animation:warn-pulse 2s infinite}
+.ai-card-warn-row.warning{background:linear-gradient(135deg,#fffbeb,#fef3c7);color:#92400e;border:1.5px solid #fde68a;border-radius:10px;margin-bottom:3px}
+.ai-card-warn-row.info{background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#1e40af;border:1.5px solid #bfdbfe;border-radius:10px;margin-bottom:3px}
+.ai-card-warn-ico{font-size:15px;flex-shrink:0;margin-top:1px}
+.ai-card-warn-txt{flex:1}
+.ai-card-warn-txt b{font-weight:800}
+@keyframes warn-pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.25)}60%{box-shadow:0 0 0 5px rgba(220,38,38,.0)}}
+/* AI Banner */
+.ai-banner{background:linear-gradient(135deg,#0f172a,#1e3a8a);border-radius:12px;padding:12px 14px;color:#fff;margin-bottom:4px}
+.ai-banner-title{font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;margin-bottom:8px;opacity:.9}
+.ai-insight{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.ai-insight:last-child{border-bottom:none;padding-bottom:0}
+.ai-insight-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.ai-insight-text{font-size:11.5px;line-height:1.4;opacity:.9}
+.ai-insight-text b{color:#60a5fa;opacity:1}
+.ai-insight-item{display:flex;gap:8px;padding:7px 10px;border-radius:8px;margin-bottom:4px;font-size:12.5px;line-height:1.4;align-items:flex-start}
+.ai-insight-item:last-child{margin-bottom:0}
+.ai-insight-item.critical{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3)}
+.ai-insight-item.warning{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3)}
+.ai-insight-item.info{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25)}
+.ai-insight-item.ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25)}
+.ai-insight-ico{font-size:15px;flex-shrink:0;margin-top:1px}
+.ai-insight-txt{flex:1;color:#e2e8f0}
+.ai-insight-txt b{color:#fff;font-weight:700}
+.new-card{padding:10px 13px;border-bottom:1px solid var(--border);position:relative}
+.new-card:last-child{border-bottom:none}
+.new-card-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.new-card-cust{font-size:13.5px;font-weight:800;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.new-card-spec{font-size:11px;color:var(--text2);margin-bottom:3px}
+.new-card-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.new-card-chip{font-size:10.5px;padding:1px 7px;border-radius:5px;font-weight:600;background:var(--bg);border:1px solid var(--border);color:var(--text3)}
+.new-card-chip.kg{background:#f0fdf4;border-color:#86efac;color:#166534}
+.new-card-chip.pri{font-weight:800}
+.new-card-time{font-size:10px;color:var(--text4);margin-top:4px}
+/* Desktop: 4 cột */
 .dash-mini-card{padding:9px 13px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative}
 .dash-mini-card:last-child{border-bottom:none}
 .dash-mini-card:active{background:var(--bg)}
@@ -376,7 +419,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 /* Base banner */
 .ann-bar{
   display:flex;align-items:flex-start;gap:12px;padding:13px 16px 12px;
-  border-radius:0;border-left:5px solid rgba(255,255,255,.6);
+  border-radius:14px;border-left:5px solid rgba(255,255,255,.6);
   animation:ann-slide .5s cubic-bezier(.34,1.56,.64,1) forwards;
   box-shadow:0 4px 24px rgba(0,0,0,.25);
   position:relative;overflow:hidden;
@@ -490,7 +533,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   .stat-num{font-size:30px}
   .stat-icon-wrap{width:48px;height:48px;border-radius:13px;font-size:22px}
   /* Desktop: 3 cột đều nhau, không scroll */
-  .dash-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;overflow-x:visible;margin:0;padding:0}
+  .dash-3col{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;overflow-x:visible;margin:0;padding:0}
   .dash-col{flex:none;min-width:0;max-height:480px;display:flex;flex-direction:column}
   .dash-col-body{overflow-y:auto;flex:1}
   .modal-box{border-radius:16px;max-width:560px;margin:auto;padding:24px 28px 36px}
@@ -1890,7 +1933,7 @@ function orderCard(o, showStatus=true){
   </div>`;
 }
 
-// Dashboard
+// Dashboard mini card (dùng ở cột Đang chạy và Hoàn thành)
 function dashMiniCard(o, onClick){
   const s   = o.status==='cutting'?'running':o.status;
   const pc  = PRI_COLOR[o.priority]||'#64748b';
@@ -1903,25 +1946,200 @@ function dashMiniCard(o, onClick){
       ? fmtDateTime(o.startedAt)
       : o.createdAt ? fmtDateTime(o.createdAt) : '';
   const timeIcon = s==='done'?'✅':s==='running'?'▶':'🕐';
-  return `<div class="dash-mini-card" onclick="${onClick}" style="border-left:3px solid ${pc}">
+  const ai = aiAnalyzeOrder(o);
+  const topWarn = ai.warnings[0];
+
+  // Tính thời gian chạy cho display
+  let runTime='';
+  if(s==='running'&&o.startedAt){
+    const hrs=(Date.now()-o.startedAt)/3600000;
+    const h=Math.floor(hrs),m=Math.round((hrs%1)*60);
+    runTime=h>0?`${h}g${m}p`:`${m}p`;
+  }
+
+  return `<div class="dash-mini-card" onclick="${onClick}" style="border-left:3px solid ${topWarn?.level==='red'?'#dc2626':topWarn?.level==='amber'?'#f59e0b':pc}">
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
       <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.customer||'—'}</span>
       <span style="font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:20px;background:${pc}20;color:${pc};white-space:nowrap">${o.priority||''}</span>
     </div>
-    <div class="dash-mini-spec">${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm</div>
-    <div class="dash-mini-row">
-      <span style="font-size:11px;font-weight:700;color:var(--text)">×${o.qty||0}</span>
-      <span style="font-size:10.5px;color:var(--text4)">thanh</span>
-      <span style="font-size:10.5px;background:#f0fdf4;color:#166534;padding:1px 6px;border-radius:5px;font-weight:600">⚖️${o.kg||0}kg</span>
-      ${o.po?`<span style="font-size:10.5px;color:var(--text4)">PO:${o.po}</span>`:''}
-    </div>
-    ${pct>0?`<div style="margin-top:5px">
+    <div class="dash-mini-spec">${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm · ×${o.qty||0} · ⚖️${o.kg||0}kg</div>
+    ${o.po||o.type?`<div style="font-size:10.5px;color:var(--text4);margin-top:1px">${o.po?'PO:'+o.po+' ':''} ${o.type||''}</div>`:''}
+    ${pct>0?`<div style="margin-top:4px">
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}%</span></div>
-      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px;transition:width .4s"></div></div>
+      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px"></div></div>
     </div>`:''}
-    ${overdue?`<div style="font-size:10px;color:var(--red-m);font-weight:700;margin-top:3px;background:var(--red-l);padding:2px 7px;border-radius:5px;display:inline-block">⚠️ Quá hạn</div>`:''}
-    ${timeStr?`<div class="dash-mini-time" style="margin-top:4px">${timeIcon} ${timeStr}</div>`:''}
+    ${topWarn?`<div class="ai-warn ${topWarn.level}" style="margin-top:4px;font-size:10px">${topWarn.msg}</div>`:''}
+    ${runTime&&!topWarn?`<div class="ai-warn ok" style="margin-top:4px;font-size:10px">⚙️ Đang chạy ${runTime}</div>`:''}
+    ${timeStr?`<div class="dash-mini-time" style="margin-top:3px">${timeIcon} ${timeStr}</div>`:''}
   </div>`;
+}
+
+function dashMiniCardNew(o){
+  const s = o.status==='cutting'?'running':o.status;
+  const pc = PRI_COLOR[o.priority]||'#64748b';
+  const si = statusInfo(s);
+  const overdue = s!=='done'&&o.deliveryDate&&new Date(o.deliveryDate)<new Date();
+  const age = o.createdAt ? Math.floor((Date.now()-o.createdAt)/60000) : 0;
+  const ageStr = age<60?age+'p':age<1440?Math.floor(age/60)+'g':Math.floor(age/1440)+'ngày';
+  const pct = o.qty&&o.doneQty ? Math.min(100,Math.round(o.doneQty/o.qty*100)) : 0;
+  const borderC = s==='done'?'#10b981':s==='running'?'#3b82f6':'#f59e0b';
+  return `<div class="new-card" style="border-left:3px solid ${borderC}">
+    <div class="new-card-top">
+      <span class="new-card-cust">${o.customer||'—'}</span>
+      <span class="badge ${si.cls}" style="font-size:9px;padding:1px 6px;border-radius:10px">${si.label}</span>
+    </div>
+    <div class="new-card-spec">${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm${o.type?' — '+o.type:''}</div>
+    <div class="new-card-row">
+      <span class="new-card-chip pri" style="background:${pc}18;border-color:${pc}60;color:${pc}">${o.priority||'—'}</span>
+      <span class="new-card-chip">×${o.qty||0} thanh</span>
+      <span class="new-card-chip kg">⚖️ ${o.kg||0}kg</span>
+      ${o.po?`<span class="new-card-chip">PO: ${o.po}</span>`:''}
+    </div>
+    ${pct>0?`<div style="margin-top:5px"><div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}%</span></div><div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px"></div></div></div>`:''}
+    ${overdue?'<div class="ai-warn red" style="font-size:10px">⚠️ Quá hạn giao hàng</div>':''}
+    <div class="new-card-time">🕐 ${ageStr} trước${o.deliveryDate?' · 📅 '+fmtDate(o.deliveryDate):''}</div>
+  </div>`;
+}
+
+// ════ AI ENGINE ════════════════════════════════════════════════
+// Phân tích từng đơn: cảnh báo thời gian chạy, deadline, tiến độ
+function fmtHrs(hrs){
+  if(hrs < 1) return Math.round(hrs*60)+'p';
+  const h=Math.floor(hrs), m=Math.round((hrs%1)*60);
+  if(hrs >= 24){ const d=Math.floor(hrs/24), rem=Math.round(hrs%24); return rem>0?`${d} ngày ${rem}g`:`${d} ngày`; }
+  return m>0?`${h}g${m}p`:`${h}g`;
+}
+
+function aiAnalyzeOrder(o){
+  const now = Date.now();
+  const s = o.status==='cutting'?'running':o.status;
+  const warnings = [];
+  let score = 0;
+  let urgencyTag = ''; // '' | 'normal' | 'warning' | 'critical' | 'overdue'
+
+  // Ưu tiên cơ bản (GẤP 1 = điểm cao nhất)
+  const priNum = parseInt((o.priority||'GẤP 9').replace('GẤP ',''));
+  score += (9 - priNum) * 25;
+
+  if(s === 'running' && o.startedAt){
+    const hrs = (now - o.startedAt) / 3600000;
+    const pct = o.qty&&o.doneQty ? o.doneQty/o.qty*100 : 0;
+    const timeStr = fmtHrs(hrs);
+
+    if(hrs >= 48){
+      // Chạy hơn 2 ngày — cực kỳ nghiêm trọng
+      warnings.push({level:'red', msg:`🆘 Chạy ${timeStr} — PHẢI HOÀN THÀNH NGAY!`});
+      score += 500;
+      urgencyTag = 'critical';
+    } else if(hrs >= 24){
+      // Chạy hơn 1 ngày
+      warnings.push({level:'red', msg:`🚨 Chạy ${timeStr} — cần hoàn thiện gấp!`});
+      score += 350;
+      urgencyTag = 'critical';
+    } else if(hrs >= 12){
+      warnings.push({level:'red', msg:`⛔ Chạy ${timeStr} — đã quá nửa ngày!`});
+      score += 200;
+      urgencyTag = 'warning';
+    } else if(hrs >= 8){
+      warnings.push({level:'red', msg:`🚨 Chạy ${timeStr} — kiểm tra ngay!`});
+      score += 150;
+      urgencyTag = 'warning';
+    } else if(hrs >= 4){
+      warnings.push({level:'amber', msg:`⏱ Chạy ${timeStr} — theo dõi tiến độ`});
+      score += 70;
+      urgencyTag = 'normal';
+    } else if(hrs >= 2){
+      score += 25;
+    }
+
+    // Tiến độ cực chậm
+    if(hrs >= 4 && pct < 10 && o.qty > 0){
+      warnings.push({level:'red', msg:`📉 Tiến độ chỉ ${Math.round(pct)}% sau ${timeStr} — rất chậm!`});
+      score += 80;
+    } else if(hrs >= 2 && pct < 25 && o.qty > 0){
+      warnings.push({level:'amber', msg:`📉 Tiến độ ${Math.round(pct)}% sau ${timeStr}`});
+      score += 35;
+    }
+  }
+
+  if(s !== 'done' && o.deliveryDate){
+    const daysLeft = (new Date(o.deliveryDate) - now) / 86400000;
+    if(daysLeft < 0){
+      const overDays = Math.abs(Math.floor(daysLeft));
+      warnings.push({level:'red', msg:`🔥 Trễ ${overDays>0?overDays+' ngày':'hôm nay'}!`});
+      score += 300;
+      urgencyTag = 'overdue';
+    } else if(daysLeft < 1){
+      warnings.push({level:'red', msg:`🔴 Hạn giao HÔM NAY`});
+      score += 180;
+    } else if(daysLeft < 2){
+      warnings.push({level:'amber', msg:`🟡 Hạn giao ngày mai`});
+      score += 80;
+    } else if(daysLeft <= 3){
+      score += 25;
+    }
+  }
+
+  return { warnings, score, urgencyTag };
+}
+
+// AI tổng hợp insights — phân loại nghiêm trọng → nhẹ
+function aiGetInsights(orders){
+  const now = Date.now();
+  const insights = [];
+  const running = orders.filter(o=>o.status==='running'||o.status==='cutting');
+  const pending = orders.filter(o=>o.status==='pending');
+
+  // Cực nghiêm trọng: chạy hơn 24h
+  const veryLong = running.filter(o=>o.startedAt&&(now-o.startedAt)>=86400000);
+  if(veryLong.length){
+    veryLong.forEach(o=>{
+      const hrs=(now-o.startedAt)/3600000;
+      insights.push({icon:'🆘',level:'critical',
+        text:`<b>${o.customer}</b> chạy <b>${fmtHrs(hrs)}</b> — ${o.priority||''} · PHẢI HOÀN THIỆN NGAY!`});
+    });
+  }
+
+  // Nghiêm trọng: chạy 8–24h
+  const longRun = running.filter(o=>o.startedAt&&(now-o.startedAt)>=28800000&&(now-o.startedAt)<86400000);
+  if(longRun.length){
+    longRun.forEach(o=>{
+      const hrs=(now-o.startedAt)/3600000;
+      insights.push({icon:'🚨',level:'warning',
+        text:`<b>${o.customer}</b> chạy <b>${fmtHrs(hrs)}</b> — ${o.priority||''} · cần hoàn thiện gấp`});
+    });
+  }
+
+  // Quá hạn giao
+  const overdue=orders.filter(o=>o.status!=='done'&&o.deliveryDate&&new Date(o.deliveryDate)<now);
+  if(overdue.length){
+    insights.push({icon:'🔥',level:'critical',
+      text:`<b>${overdue.length} đơn quá hạn giao hàng</b>: ${overdue.slice(0,3).map(o=>`<b>${o.customer}</b>`).join(', ')}`});
+  }
+
+  // Hạn giao hôm nay/ngày mai
+  const soon=orders.filter(o=>{
+    if(o.status==='done'||!o.deliveryDate) return false;
+    const d=(new Date(o.deliveryDate)-now)/86400000; return d>=0&&d<2;
+  });
+  if(soon.length){
+    insights.push({icon:'🔔',level:'warning',
+      text:`<b>${soon.length} đơn</b> hạn giao trong 2 ngày: ${soon.map(o=>`<b>${o.customer}</b>`).join(', ')}`});
+  }
+
+  // Gợi ý bắt đầu đơn tiếp theo
+  if(!running.length&&pending.length){
+    const next=pending.sort((a,b)=>parseInt((a.priority||'GẤP 9').replace('GẤP ',''))-parseInt((b.priority||'GẤP 9').replace('GẤP ','')))[0];
+    insights.push({icon:'💡',level:'info',
+      text:`Không có đơn đang chạy — hãy bắt đầu <b>${next.customer}</b> (${next.priority||''})`});
+  }
+
+  if(!insights.length&&running.length){
+    insights.push({icon:'✅',level:'ok',
+      text:`<b>${running.length} đơn đang chạy</b> đúng tiến độ — hiệu suất tốt!`});
+  }
+
+  return insights.slice(0,5);
 }
 
 function renderDashboard(){
@@ -1932,12 +2150,31 @@ function renderDashboard(){
   const done    = orders.filter(o=>o.status==='done').length;
   const overdue = orders.filter(o=>o.status!=='done'&&o.deliveryDate&&new Date(o.deliveryDate)<new Date()).length;
   const totalKg = orders.reduce((s,o)=>s+(parseFloat(o.kg)||0),0).toFixed(1);
+  const now = Date.now();
 
-  // 3 danh sách mini
   const priSort = (a,b)=>parseInt((a.priority||'GẤP 9').replace('GẤP ',''))-parseInt((b.priority||'GẤP 9').replace('GẤP ',''));
-  const recentNew   = orders.filter(o=>o.status==='pending').sort(priSort).slice(0,6);
-  const runningList = orders.filter(o=>o.status==='running'||o.status==='cutting').sort(priSort).slice(0,6);
-  const doneList    = orders.filter(o=>o.status==='done').sort((a,b)=>b.doneAt-a.doneAt).slice(0,6);
+
+  // Cột 1: Đơn mới nhập gần đây (tất cả status, sort mới nhất)
+  const recentAll = orders.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,8);
+
+  // Cột 2: Chờ SX — sort theo độ ưu tiên + thời gian chờ lâu
+  const waitingList = orders.filter(o=>o.status==='pending').sort((a,b)=>{
+    const aiA = aiAnalyzeOrder(a).score, aiB = aiAnalyzeOrder(b).score;
+    return aiB - aiA; // điểm AI cao lên trước
+  });
+
+  // Cột 3: Đang chạy — AI sắp xếp: chạy lâu nhất lên trước
+  const runningList = orders
+    .filter(o=>o.status==='running'||o.status==='cutting')
+    .map(o=>({ o, score: aiAnalyzeOrder(o).score }))
+    .sort((a,b)=>b.score-a.score)
+    .map(x=>x.o);
+
+  // Cột 4: Hoàn thành gần đây
+  const doneList = orders.filter(o=>o.status==='done').sort((a,b)=>b.doneAt-a.doneAt).slice(0,8);
+
+  // AI insights
+  const insights = aiGetInsights(orders);
 
   const notifBanner = ('Notification' in window&&Notification.permission!=='granted')
     ? `<div class="notif-bar"><span>🔔</span><p>Bật thông báo nhận đơn mới tức thì</p><button onclick="requestNotif();this.closest('.notif-bar')?.remove()">Bật</button></div>` : '';
@@ -1950,11 +2187,11 @@ function renderDashboard(){
     <div class="stats-grid">
       <div class="stat-card" onclick="goTab('dorDang')">
         <div class="stat-icon-wrap" style="background:#eff6ff">📋</div>
-        <div class="stat-right"><div class="stat-num">${total}</div><div class="stat-lbl">Tổng đơn · ${totalKg}kg</div></div>
+        <div class="stat-right"><div class="stat-num">${total}</div><div class="stat-lbl">Tổng · ${totalKg}kg</div></div>
       </div>
       <div class="stat-card" onclick="goTab('dorDang')">
         <div class="stat-icon-wrap" style="background:var(--amber-l)">⏳</div>
-        <div class="stat-right"><div class="stat-num" style="color:var(--amber-m)">${waiting}</div><div class="stat-lbl">Chờ sản xuất</div></div>
+        <div class="stat-right"><div class="stat-num" style="color:var(--amber-m)">${waiting}</div><div class="stat-lbl">Chờ SX</div></div>
       </div>
       <div class="stat-card" onclick="goTab('keHoach')">
         <div class="stat-icon-wrap" style="background:#dbeafe">⚙️</div>
@@ -1962,16 +2199,39 @@ function renderDashboard(){
       </div>
       <div class="stat-card" onclick="goTab('hoanThanh')">
         <div class="stat-icon-wrap" style="background:var(--green-l)">✅</div>
-        <div class="stat-right"><div class="stat-num" style="color:var(--green-m)">${done}</div><div class="stat-lbl">Hoàn thành</div></div>
+        <div class="stat-right"><div class="stat-num" style="color:var(--green-m)">${done}</div><div class="stat-lbl">Xong</div></div>
       </div>
     </div>
 
-    ${overdue?`<div class="warn-banner">⚠️ Có ${overdue} đơn quá hạn giao hàng! <button onclick="goTab('dorDang')" style="background:var(--amber-m);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;font-family:inherit">Xem ngay</button></div>`:''}
+    ${overdue?`<div class="warn-banner">⚠️ ${overdue} đơn quá hạn! <button onclick="goTab('dorDang')" style="background:var(--amber-m);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;font-family:inherit">Xem ngay</button></div>`:''}
 
-    <!-- 3 CỘT: scroll ngang trên mobile, grid 3 cột trên desktop -->
+    <!-- AI INSIGHTS BANNER -->
+    ${insights.length?`<div class="ai-banner">
+      <div class="ai-banner-title">🤖 AI Phân tích · ${new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})}</div>
+      ${insights.map(i=>`<div class="ai-insight"><span class="ai-insight-icon">${i.icon}</span><span class="ai-insight-text">${i.text}</span></div>`).join('')}
+    </div>`:''}
+
+    <!-- 4 CỘT: scroll ngang mobile, grid desktop -->
     <div class="dash-3col">
 
-      <!-- Cột 1: Chờ SX -->
+      <!-- Cột 1: Đơn mới gần đây -->
+      <div class="dash-col">
+        <div class="dash-col-hd" style="background:linear-gradient(135deg,#f8faff,#eff6ff)">
+          <div class="dash-col-hd-title">
+            <span style="width:9px;height:9px;border-radius:50%;background:#6366f1;display:inline-block;flex-shrink:0"></span>
+            🆕 Đơn mới nhất
+          </div>
+          <span class="dash-col-hd-count" style="background:#6366f1;color:#fff">${recentAll.length}</span>
+        </div>
+        <div class="dash-col-body">
+          ${recentAll.length
+            ? recentAll.map(o=>dashMiniCardNew(o)).join('')
+            : '<div class="dash-empty">Chưa có đơn nào</div>'}
+          ${total>8?`<div style="padding:8px 13px;text-align:center"><button onclick="goTab('dorDang')" style="font-size:12px;color:#6366f1;border:1px solid #c7d2fe;background:#eef2ff;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả →</button></div>`:''}
+        </div>
+      </div>
+
+      <!-- Cột 2: Chờ SX (AI sort) -->
       <div class="dash-col">
         <div class="dash-col-hd" style="background:linear-gradient(135deg,#fffbeb,#fef3c7)">
           <div class="dash-col-hd-title">
@@ -1981,19 +2241,20 @@ function renderDashboard(){
           <span class="dash-col-hd-count" style="background:var(--amber-m);color:#fff">${waiting}</span>
         </div>
         <div class="dash-col-body">
-          ${recentNew.length
-            ? recentNew.map(o=>dashMiniCard(o,"goTab('keHoach')")).join('')
+          ${waitingList.length
+            ? waitingList.slice(0,8).map(o=>dashMiniCard(o,"goTab('keHoach')")).join('')
             : '<div class="dash-empty">Không có đơn nào</div>'}
-          ${waiting>6?`<div style="padding:8px 13px;text-align:center"><button onclick="goTab('keHoach')" style="font-size:12px;color:var(--brand);border:1px solid #bfdbfe;background:#eff6ff;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${waiting} đơn →</button></div>`:''}
+          ${waiting>8?`<div style="padding:8px 13px;text-align:center"><button onclick="goTab('keHoach')" style="font-size:12px;color:var(--brand);border:1px solid #bfdbfe;background:#eff6ff;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${waiting} đơn →</button></div>`:''}
         </div>
       </div>
 
-      <!-- Cột 2: Đang chạy -->
+      <!-- Cột 3: Đang chạy (AI ưu tiên chạy lâu lên trên) -->
       <div class="dash-col">
         <div class="dash-col-hd" style="background:linear-gradient(135deg,#eff6ff,#dbeafe)">
           <div class="dash-col-hd-title">
             <span style="width:9px;height:9px;border-radius:50%;background:var(--brand3);display:inline-block;flex-shrink:0;animation:pulse 1.5s infinite"></span>
             ⚙️ Đang chạy
+            ${runningList.some(o=>aiAnalyzeOrder(o).warnings.length>0)?'<span style="font-size:9px;background:#dc2626;color:#fff;padding:1px 5px;border-radius:10px;font-weight:700">AI ⚠️</span>':''}
           </div>
           <span class="dash-col-hd-count" style="background:var(--brand);color:#fff">${running}</span>
         </div>
@@ -2004,7 +2265,7 @@ function renderDashboard(){
         </div>
       </div>
 
-      <!-- Cột 3: Hoàn thành -->
+      <!-- Cột 4: Hoàn thành gần đây -->
       <div class="dash-col">
         <div class="dash-col-hd" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7)">
           <div class="dash-col-hd-title">
@@ -2017,7 +2278,7 @@ function renderDashboard(){
           ${doneList.length
             ? doneList.map(o=>dashMiniCard(o,"goTab('hoanThanh')")).join('')
             : '<div class="dash-empty">Chưa có đơn hoàn thành</div>'}
-          ${done>6?`<div style="padding:8px 13px;text-align:center"><button onclick="goTab('hoanThanh')" style="font-size:12px;color:var(--green);border:1px solid #86efac;background:#f0fdf4;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${done} đơn →</button></div>`:''}
+          ${done>8?`<div style="padding:8px 13px;text-align:center"><button onclick="goTab('hoanThanh')" style="font-size:12px;color:var(--green);border:1px solid #86efac;background:#f0fdf4;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${done} đơn →</button></div>`:''}
         </div>
       </div>
 
@@ -2156,6 +2417,7 @@ function orderCardKH(o, seq){
     ${s==='running'&&o.startedAt?`<div class="card-due" style="color:var(--brand3)">▶ Bắt đầu: ${fmtDateTime(o.startedAt)}</div>`:''}
     ${o.note?`<div class="card-note">📝 ${o.note}</div>`:''}
     ${renderProgressBar(o)}
+    ${renderAIWarn(o)}
     ${canStatus?`<div class="card-actions">
       <button class="ca-btn${s==='pending'?' active-wait':''}" onclick="setStatus('${o.id}','pending')">⏳ Chờ SX</button>
       <button class="ca-btn${s==='running'?' active-run':''}" onclick="setStatus('${o.id}','running')">⚙️ Đang chạy</button>
@@ -2490,6 +2752,29 @@ function saveProgress(){
   saveOrders();
 }
 
+// ════ AI WARNING BLOCK — hiện trong mọi card mọi tab ═══════
+function renderAIWarn(o){
+  const s = o.status==='cutting'?'running':o.status;
+  if(s==='done') return ''; // Đơn xong không cần cảnh báo
+
+  const ai = aiAnalyzeOrder(o);
+  if(!ai.warnings.length) return '';
+
+  const levelClass = {red:'critical', amber:'warning', green:'info', ok:'ok'};
+  const rows = ai.warnings.map(w=>{
+    const cls = w.level==='red'?'critical':w.level==='amber'?'warning':'info';
+    return `<div class="ai-card-warn-row ${cls}">
+      <span class="ai-card-warn-ico">${
+        w.level==='red'?(ai.urgencyTag==='critical'?'🆘':'🚨'):
+        w.level==='amber'?'⚠️':'💡'
+      }</span>
+      <span class="ai-card-warn-txt">${w.msg}</span>
+    </div>`;
+  }).join('');
+
+  return `<div class="ai-card-warn">${rows}</div>`;
+}
+
 // Helper hiển thị progress bar
 function renderProgressBar(o){
   const qty=o.qty||0; const done=o.doneQty||0;
@@ -2543,6 +2828,58 @@ function deleteOrder(id){
     saveOrders();
   });
 }
+// Tự động thăng cấp ưu tiên: khi GẤP N xong hết → nâng GẤP N+1 lên GẤP N
+function aiAutoPromote(){
+  const active = DB.orders.filter(o=>o.status!=='done');
+  if(!active.length) return;
+
+  // Tìm mức ưu tiên thấp nhất hiện đang còn hoạt động
+  const priNums = active
+    .map(o=>parseInt((o.priority||'GẤP 9').replace('GẤP ','')))
+    .filter(n=>!isNaN(n));
+  if(!priNums.length) return;
+
+  const minPri = Math.min(...priNums); // mức ưu tiên cao nhất đang còn (số nhỏ = ưu tiên cao)
+
+  // Lấy tất cả đơn chưa done có mức ưu tiên THẤP HƠN minPri (số lớn hơn)
+  const toPromote = active.filter(o=>{
+    const n=parseInt((o.priority||'GẤP 9').replace('GẤP ',''));
+    return !isNaN(n) && n === minPri+1;
+  });
+
+  // Kiểm tra: tất cả GẤP minPri có đã done hết không?
+  const gapMinActive = DB.orders.filter(o=>{
+    const n=parseInt((o.priority||'GẤP 9').replace('GẤP ',''));
+    return !isNaN(n) && n===minPri && o.status!=='done';
+  });
+
+  if(gapMinActive.length===0 && toPromote.length>0){
+    // Tất cả GẤP minPri đã xong → thăng GẤP (minPri+1) lên GẤP minPri
+    const newPri = 'GẤP '+minPri;
+    const promoted = [];
+    toPromote.forEach(o=>{
+      const old = o.priority;
+      o.priority = newPri;
+      o.aiPromoted = true;
+      o.aiPromotedFrom = old;
+      promoted.push(o.customer);
+    });
+    if(promoted.length){
+      log('AI Thăng cấp',
+        `Tự động: ${promoted.join(', ')} → ${newPri}`,
+        '', null,
+        {promoted:promoted, newPriority:newPri});
+      showToast(`🤖 AI: Đã nâng ${promoted.length} đơn lên ${newPri}`);
+      addNotif('system',`🤖 AI tự nâng ưu tiên → ${newPri}`,
+        `${promoted.join(', ')} được nâng lên ${newPri}`,
+        'keHoach','Hệ thống AI');
+      saveOrders();
+      return true;
+    }
+  }
+  return false;
+}
+
 function setStatus(id, newStatus){
   const o=DB.orders.find(x=>x.id===id); if(!o) return;
   const before=o.status;
@@ -2554,19 +2891,26 @@ function setStatus(id, newStatus){
   log(lb[newStatus]||newStatus,
     `${o.customer} · ${o.priority||''} · ${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm · ${o.qty||0} thanh`,
     id,
-    {status:before, customer:o.customer, priority:o.priority},
-    {status:newStatus, customer:o.customer, priority:o.priority});
+    {status:before,customer:o.customer,priority:o.priority},
+    {status:newStatus,customer:o.customer,priority:o.priority});
+
   // UI ngay lập tức
   renderTab(currentTab); updateBadges();
   showToast({pending:'⏳ Chờ sản xuất',running:'⚙️ Đang chạy!',done:'✅ Hoàn thành!'}[newStatus]||'');
-  // Firebase sau
+
+  // Firebase
   saveOrders();
+
   if(newStatus==='done'){
     pushNotif('✅ Hoàn thành!',`${o.customer} đã xong`);
-    addNotif('order_done','✅ Hoàn thành: '+o.customer,`${o.thickness}×${o.width}×${o.length}mm · ${o.qty} thanh · ${o.priority||''}`,'hoanThanh',currentUser?.name);
+    addNotif('order_done','✅ Hoàn thành: '+o.customer,
+      `${o.thickness}×${o.width}×${o.length}mm · ${o.qty} thanh · ${o.priority||''}`,'hoanThanh',currentUser?.name);
+    // Kiểm tra thăng cấp tự động sau 500ms (để UI render xong)
+    setTimeout(()=>{ aiAutoPromote(); renderTab(currentTab); updateBadges(); },500);
   }
   if(newStatus==='running'){
-    addNotif('order_run','⚙️ Bắt đầu chạy: '+o.customer,`${o.thickness}×${o.width}×${o.length}mm · ${o.qty} thanh · ${o.priority||''}`,'keHoach',currentUser?.name);
+    addNotif('order_run','⚙️ Bắt đầu chạy: '+o.customer,
+      `${o.thickness}×${o.width}×${o.length}mm · ${o.qty} thanh · ${o.priority||''}`,'keHoach',currentUser?.name);
   }
 }
 

@@ -382,42 +382,6 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
 /* ── WARN BANNER ── */
 .warn-banner{background:var(--amber-l);color:var(--amber);padding:10px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:600;border-left:3px solid var(--amber-m)}
-/* ── DỞ DANG 2 CỘT ── */
-.dd-layout{display:flex;flex-direction:column;gap:12px}
-.dd-col{border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--card)}
-.dd-col-hd{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--border)}
-.dd-col-hd-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.dd-col-hd-info{flex:1;min-width:0}
-.dd-col-hd-title{font-size:13px;font-weight:800;color:var(--text);line-height:1.2}
-.dd-col-hd-sub{font-size:10.5px;color:var(--text4);font-weight:500;margin-top:1px}
-.dd-col-hd-badge{font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap}
-/* Mini card trong cột Đơn mới */
-.dd-new-card{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;cursor:pointer;transition:background .1s}
-.dd-new-card:last-child{border-bottom:none}
-.dd-new-card:active{background:var(--bg)}
-.dd-new-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.dd-new-body{flex:1;min-width:0}
-.dd-new-cust{font-size:13.5px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
-.dd-new-spec{font-size:11.5px;color:var(--text2);margin-bottom:3px}
-.dd-new-tags{display:flex;flex-wrap:wrap;gap:4px}
-.dd-new-tag{font-size:10px;padding:1px 7px;border-radius:5px;font-weight:700;white-space:nowrap}
-.dd-new-time{font-size:10.5px;color:var(--text4);margin-top:4px}
-/* Mini card trong cột Ưu tiên */
-.dd-pri-card{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;cursor:pointer;transition:background .1s;position:relative}
-.dd-pri-card:last-child{border-bottom:none}
-.dd-pri-card:active{background:var(--bg)}
-.dd-pri-num{width:26px;height:26px;border-radius:8px;font-size:12px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.dd-pri-body{flex:1;min-width:0}
-.dd-pri-cust{font-size:13px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dd-pri-spec{font-size:11px;color:var(--text2);margin-top:2px;margin-bottom:3px}
-.dd-pri-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
-.dd-pri-tag{font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700;background:var(--bg);border:1px solid var(--border);color:var(--text3);white-space:nowrap}
-.dd-pri-tag.status-r{background:#dbeafe;border-color:#93c5fd;color:var(--brand)}
-.dd-pri-tag.status-p{background:var(--amber-l);border-color:var(--amber-m);color:var(--amber)}
-.dd-pri-tag.kg{background:#f0fdf4;border-color:#86efac;color:#166534}
-.dd-empty-col{padding:24px 16px;text-align:center;color:var(--text4);font-size:12.5px}
-/* Desktop: 2 cột cạnh nhau */
-@media(min-width:700px){.dd-layout{flex-direction:row}.dd-col{flex:1;min-width:0}}
 
 /* ── ANNOUNCE BANNER: hiện cố định phía trên mọi tab ── */
 #announceBanner{display:none;position:sticky;top:0;z-index:90;margin:0 0 0 0;padding:0;background:transparent}
@@ -2341,129 +2305,58 @@ function matchSearch(o, q){
     .some(v=>(v||'').toLowerCase().includes(s));
 }
 
-// ── Màu theo ưu tiên ──
-function priColor(pri){
-  return PRI_COLOR[pri]||'#64748b';
-}
-
-// ── Mini card cột ĐƠN MỚI ──
-function ddNewCard(o){
-  const s = o.status==='cutting'?'running':o.status;
-  const pc = priColor(o.priority);
-  const si = statusInfo(s);
-  const ai = aiAnalyzeOrder(o);
-  const topW = ai.warnings[0];
-  const age = o.createdAt ? Date.now()-o.createdAt : 0;
-  const ageStr = age<3600000
-    ? Math.floor(age/60000)+'p trước'
-    : age<86400000
-      ? Math.floor(age/3600000)+'g trước'
-      : Math.floor(age/86400000)+'ngày trước';
-  const isNew = age < 3600000;
-  return `<div class="dd-new-card" onclick="goTab('keHoach')">
-    <div class="dd-new-dot" style="background:${s==='running'?'#3b82f6':s==='done'?'#10b981':'#f59e0b'};${s==='running'?'animation:pulse 1.5s infinite':''}"></div>
-    <div class="dd-new-body">
-      <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
-        <span class="dd-new-cust">${o.customer||'—'}</span>
-        ${isNew?'<span style="font-size:9px;font-weight:800;background:#dbeafe;color:var(--brand);padding:1px 6px;border-radius:10px;flex-shrink:0">MỚI</span>':''}
-      </div>
-      <div class="dd-new-spec">${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm${o.type?' · '+o.type:''}</div>
-      <div class="dd-new-tags">
-        <span class="dd-new-tag" style="background:${pc}18;color:${pc};border:1px solid ${pc}40">${o.priority||'—'}</span>
-        <span class="dd-new-tag" style="background:var(--bg);border:1px solid var(--border);color:var(--text2)">×${o.qty||0} thanh</span>
-        <span class="dd-new-tag" style="background:#f0fdf4;border:1px solid #86efac;color:#166534">⚖️${o.kg||0}kg</span>
-        <span class="badge ${si.cls}" style="font-size:9px;padding:1px 6px;border-radius:10px">${si.label}</span>
-      </div>
-      ${topW?`<div style="margin-top:4px;font-size:10.5px;font-weight:700;color:${topW.level==='red'?'#dc2626':'#b45309'};background:${topW.level==='red'?'#fee2e2':'#fef3c7'};padding:2px 7px;border-radius:5px;display:inline-block">${topW.msg}</div>`:''}
-      <div class="dd-new-time">🕐 ${ageStr}${o.po?' · PO: '+o.po:''}</div>
-    </div>
-  </div>`;
-}
-
-// ── Mini card cột ƯU TIÊN ──
-function ddPriCard(o, rank){
-  const s = o.status==='cutting'?'running':o.status;
-  const pc = priColor(o.priority);
-  const ai = aiAnalyzeOrder(o);
-  const topW = ai.warnings[0];
-  const pct = o.qty&&o.doneQty?Math.min(100,Math.round(o.doneQty/o.qty*100)):0;
-  const elMin = o.startedAt&&s==='running'?Math.floor((Date.now()-o.startedAt)/60000):0;
-  const elStr = elMin>0?(elMin>=60?Math.floor(elMin/60)+'g'+(elMin%60?elMin%60+'p':''):elMin+'p'):'';
-  const bgStyle = ai.urgencyTag==='critical'?'background:linear-gradient(135deg,#fff5f5,#fff)':ai.urgencyTag==='warning'?'background:linear-gradient(135deg,#fffbf0,#fff)':'';
-  return `<div class="dd-pri-card" style="${bgStyle}" onclick="goTab('keHoach')">
-    <div class="dd-pri-num" style="background:${pc}">${rank}</div>
-    <div class="dd-pri-body">
-      <div style="display:flex;align-items:center;gap:5px;margin-bottom:1px">
-        <span class="dd-pri-cust">${o.customer||'—'}</span>
-        ${o.aiPromoted?'<span style="font-size:9px;font-weight:800;background:#dbeafe;color:var(--brand);padding:1px 6px;border-radius:10px;flex-shrink:0">↑ AI</span>':''}
-      </div>
-      <div class="dd-pri-spec">${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm · ${o.type||'Thanh cái'}</div>
-      <div class="dd-pri-row">
-        <span class="dd-pri-tag" style="background:${pc}18;color:${pc};border-color:${pc}40;font-weight:900">${o.priority||'—'}</span>
-        <span class="dd-pri-tag">×${o.qty||0} thanh</span>
-        <span class="dd-pri-tag kg">⚖️${o.kg||0}kg</span>
-        ${s==='running'?`<span class="dd-pri-tag status-r">⚙️${elStr?' '+elStr:''}</span>`:''}
-        ${s==='pending'?'<span class="dd-pri-tag status-p">⏳ Chờ SX</span>':''}
-        ${o.po?`<span class="dd-pri-tag">PO:${o.po}</span>`:''}
-      </div>
-      ${pct>0?`<div style="margin-top:5px"><div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}%</span></div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px"></div></div></div>`:''}
-      ${topW?`<div style="margin-top:4px;font-size:10.5px;font-weight:700;color:${topW.level==='red'?'#dc2626':'#b45309'};background:${topW.level==='red'?'#fee2e2':'#fef3c7'};padding:2px 8px;border-radius:5px;display:inline-flex;gap:4px;align-items:center">${topW.level==='red'?'🚨':'⚠️'} ${topW.msg}</div>`:''}
-      ${o.deliveryDate?`<div style="font-size:10px;color:var(--text4);margin-top:3px">📅 ${fmtDate(o.deliveryDate)}</div>`:''}
-    </div>
-  </div>`;
-}
-
 function renderDorDang(){
+  // FIX: Giữ lại giá trị search khi re-render
   const inp = document.getElementById('srchInp');
   if(inp) searchQ = inp.value;
-  const getPri = o => parseInt((o.priority||'GẤP 9').replace('GẤP ',''))||9;
-  let allActive = DB.orders.filter(o=>o.status!=='done');
-  const total = allActive.length;
-  let newList = [...allActive].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  let priList = [...allActive].sort((a,b)=>{
-    const aiA=aiAnalyzeOrder(a), aiB=aiAnalyzeOrder(b);
-    if(aiB.score!==aiA.score) return aiB.score-aiA.score;
-    return getPri(a)-getPri(b);
+
+  let list = DB.orders.filter(o=>o.status!=='done');
+  if(filterStatus!=='all') list=list.filter(o=>(filterStatus==='running'
+    ? o.status==='running'||o.status==='cutting'
+    : o.status===filterStatus));
+  if(searchQ) list=list.filter(o=>matchSearch(o,searchQ));
+
+  // Sắp xếp: mới nhất lên trên (theo createdAt), trong cùng thời gian thì theo priority
+  list.sort((a,b)=>{
+    const tA=a.createdAt||0, tB=b.createdAt||0;
+    if(tB!==tA) return tB-tA;  // mới nhất lên trước
+    const p=x=>parseInt((x.priority||'GẤP 9').replace('GẤP ',''));
+    return p(a)-p(b);
   });
-  if(searchQ){ newList=newList.filter(o=>matchSearch(o,searchQ)); priList=priList.filter(o=>matchSearch(o,searchQ)); }
-  if(filterStatus!=='all'){ const f=o=>filterStatus==='running'?o.status==='running'||o.status==='cutting':o.status===filterStatus; newList=newList.filter(f); priList=priList.filter(f); }
+
+  const count = list.length;
+  const total = DB.orders.filter(o=>o.status!=='done').length;
+
   $('mc').innerHTML=`
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="search-inp" id="srchInp" type="search" placeholder="🔍 Tìm khách hàng, PO, mã, kích thước..." value="${searchQ}" autocomplete="off" spellcheck="false">
-      ${searchQ?`<button onclick="clearSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:18px;cursor:pointer;color:var(--text4)">✕</button>`:''}
+      <input class="search-inp" id="srchInp" type="search" placeholder="🔍 Tìm khách hàng, PO, mã, loại..." value="${searchQ}" autocomplete="off" autocorrect="off" spellcheck="false">
+      ${searchQ?`<button onclick="clearSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:18px;cursor:pointer;color:var(--text4);line-height:1">✕</button>`:''}
     </div>
     <div class="chips">
       <button class="chip${filterStatus==='all'?' active':''}" onclick="filterStatus='all';renderDorDang()">Tất cả (${total})</button>
       <button class="chip${filterStatus==='pending'?' active':''}" onclick="filterStatus='pending';renderDorDang()">⏳ Chờ SX</button>
       <button class="chip${filterStatus==='running'?' active':''}" onclick="filterStatus='running';renderDorDang()">⚙️ Đang chạy</button>
     </div>
-    ${searchQ?`<div style="font-size:12px;color:var(--text3);padding:0 0 4px">Tìm thấy <b>${priList.length}</b> đơn</div>`:''}
-    ${total===0&&!searchQ
-      ? '<div class="empty"><div class="empty-icon">📦</div>Chưa có đơn nào đang làm</div>'
-      : `<div class="dd-layout">
-      <div class="dd-col">
-        <div class="dd-col-hd" style="background:linear-gradient(135deg,#eff6ff,#dbeafe)">
-          <div class="dd-col-hd-icon" style="background:#dbeafe">🆕</div>
-          <div class="dd-col-hd-info"><div class="dd-col-hd-title">Đơn mới cập nhật</div><div class="dd-col-hd-sub">Thứ tự theo thời gian nhập</div></div>
-          <span class="dd-col-hd-badge" style="background:var(--brand);color:#fff">${newList.length}</span>
-        </div>
-        <div>${newList.length?newList.slice(0,10).map(o=>ddNewCard(o)).join(''):'<div class="dd-empty-col">Không có đơn nào</div>'}
-        ${newList.length>10?`<div style="padding:8px 14px;text-align:center"><button onclick="goTab('keHoach')" style="font-size:12px;color:var(--brand);border:1px solid #bfdbfe;background:#eff6ff;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${newList.length} →</button></div>`:''}</div>
-      </div>
-      <div class="dd-col">
-        <div class="dd-col-hd" style="background:linear-gradient(135deg,#fff7ed,#fef3c7)">
-          <div class="dd-col-hd-icon" style="background:#fef3c7">🤖</div>
-          <div class="dd-col-hd-info"><div class="dd-col-hd-title">Thứ tự ưu tiên AI</div><div class="dd-col-hd-sub">Nguy cấp nhất · Ưu tiên cao nhất</div></div>
-          <span class="dd-col-hd-badge" style="background:#f59e0b;color:#fff">${priList.length}</span>
-        </div>
-        <div>${priList.length?priList.slice(0,10).map((o,i)=>ddPriCard(o,i+1)).join(''):'<div class="dd-empty-col">Không có đơn nào</div>'}
-        ${priList.length>10?`<div style="padding:8px 14px;text-align:center"><button onclick="goTab('keHoach')" style="font-size:12px;color:#b45309;border:1px solid #fde68a;background:#fffbeb;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${priList.length} →</button></div>`:''}</div>
-      </div>
-    </div>`}
+    ${searchQ?`<div style="font-size:12px;color:var(--text3);padding:2px 0 4px">Kết quả: <b>${count}</b> đơn</div>`:''}
+    ${list.length?`<div class="card-grid">`+list.map(o=>orderCard(o,false)).join('')+`</div>`:(searchQ
+        ? `<div class="empty"><div class="empty-icon">🔍</div>Không tìm thấy "<b>${searchQ}</b>"</div>`
+        : '<div class="empty"><div class="empty-icon">✅</div>Không có đơn nào phù hợp</div>')}
   `;
-  const ni=document.getElementById('srchInp');
-  if(ni){ const v=ni.value;ni.value='';ni.value=v; ni.addEventListener('input',function(){searchQ=this.value;renderDorDang();}); }
+
+  // Gắn event listener sau khi render — fix lỗi oninput inline bị mất
+  const newInp = document.getElementById('srchInp');
+  if(newInp){
+    newInp.focus();  // giữ focus sau re-render
+    // Đặt cursor về cuối
+    const val = newInp.value;
+    newInp.value = '';
+    newInp.value = val;
+    newInp.addEventListener('input', function(){
+      searchQ = this.value;
+      renderDorDang();
+    });
+  }
 }
 
 function clearSearch(){

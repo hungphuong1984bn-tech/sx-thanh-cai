@@ -2830,52 +2830,71 @@ function deleteOrder(id){
 }
 // Tự động thăng cấp ưu tiên: khi GẤP N xong hết → nâng GẤP N+1 lên GẤP N
 function aiAutoPromote(){
-  const active = DB.orders.filter(o=>o.status!=='done');
-  if(!active.length) return;
+  // Lấy số ưu tiên từ string "GẤP N"
+  const getPri = o => parseInt((o.priority||'GẤP 9').replace('GẤP ',''))||9;
 
-  // Tìm mức ưu tiên thấp nhất hiện đang còn hoạt động
-  const priNums = active
-    .map(o=>parseInt((o.priority||'GẤP 9').replace('GẤP ','')))
-    .filter(n=>!isNaN(n));
-  if(!priNums.length) return;
+  // Cascade: lặp liên tục đến khi không còn thăng cấp nào nữa
+  // VD: GẤP1 xong → GẤP2→GẤP1, rồi kiểm tra GẤP1 mới xong hết chưa → GẤP3→GẤP2...
+  const allPromoted = [];
+  let changed = true;
 
-  const minPri = Math.min(...priNums); // mức ưu tiên cao nhất đang còn (số nhỏ = ưu tiên cao)
+  while(changed){
+    changed = false;
+    const active = DB.orders.filter(o=>o.status!=='done');
+    if(!active.length) break;
 
-  // Lấy tất cả đơn chưa done có mức ưu tiên THẤP HƠN minPri (số lớn hơn)
-  const toPromote = active.filter(o=>{
-    const n=parseInt((o.priority||'GẤP 9').replace('GẤP ',''));
-    return !isNaN(n) && n === minPri+1;
-  });
+    // Tìm tất cả mức ưu tiên đang còn active
+    const priNums = [...new Set(active.map(getPri))].sort((a,b)=>a-b);
+    if(!priNums.length) break;
 
-  // Kiểm tra: tất cả GẤP minPri có đã done hết không?
-  const gapMinActive = DB.orders.filter(o=>{
-    const n=parseInt((o.priority||'GẤP 9').replace('GẤP ',''));
-    return !isNaN(n) && n===minPri && o.status!=='done';
-  });
+    // Với mỗi mức hiện có, kiểm tra từ thấp nhất lên
+    for(const pri of priNums){
+      // Đơn GẤP pri còn active không?
+      const stillActive = active.filter(o=>getPri(o)===pri);
+      if(stillActive.length > 0) break; // còn đơn ở mức này → không thăng cấp mức sau
 
-  if(gapMinActive.length===0 && toPromote.length>0){
-    // Tất cả GẤP minPri đã xong → thăng GẤP (minPri+1) lên GẤP minPri
-    const newPri = 'GẤP '+minPri;
-    const promoted = [];
-    toPromote.forEach(o=>{
-      const old = o.priority;
-      o.priority = newPri;
-      o.aiPromoted = true;
-      o.aiPromotedFrom = old;
-      promoted.push(o.customer);
-    });
-    if(promoted.length){
-      log('AI Thăng cấp',
-        `Tự động: ${promoted.join(', ')} → ${newPri}`,
-        '', null,
-        {promoted:promoted, newPriority:newPri});
-      showToast(`🤖 AI: Đã nâng ${promoted.length} đơn lên ${newPri}`);
-      addNotif('system',`🤖 AI tự nâng ưu tiên → ${newPri}`,
-        `${promoted.join(', ')} được nâng lên ${newPri}`,
-        'keHoach','Hệ thống AI');
-      saveOrders();
-      return true;
+      // GẤP pri đã done hết → tìm mức kế tiếp để thăng
+      const nextPri = priNums.find(p=>p > pri);
+      if(!nextPri) break;
+
+      const toPromote = active.filter(o=>getPri(o)===nextPri);
+      if(!toPromote.length) continue;
+
+      const newPriStr = 'GẤP '+pri;
+      toPromote.forEach(o=>{
+        allPromoted.push({customer:o.customer, from:o.priority, to:newPriStr});
+        o.aiPromotedFrom = o.priority;
+        o.priority = newPriStr;
+        o.aiPromoted = true;
+      });
+      changed = true; // Có thăng cấp → chạy lại vòng lặp
+      break; // Restart while để re-check từ đầu
     }
+  }
+
+  if(allPromoted.length){
+    // Nhóm theo cấp mới để thông báo rõ hơn
+    const byNew = {};
+    allPromoted.forEach(p=>{ (byNew[p.to]=byNew[p.to]||[]).push(p.customer); });
+
+    const msgs = Object.entries(byNew)
+      .map(([pri,custs])=>`${custs.join(', ')} → ${pri}`)
+      .join(' | ');
+
+    log('AI Thăng cấp', `Tự động: ${msgs}`, '', null,
+      {promoted:allPromoted.map(p=>p.customer), detail:msgs});
+
+    // Thông báo từng nhóm
+    Object.entries(byNew).forEach(([pri,custs])=>{
+      showToast(`🤖 AI: ${custs.length} đơn nâng lên ${pri}`);
+      addNotif('system',
+        `🤖 AI nâng ưu tiên → ${pri}`,
+        custs.join(', ')+` được nâng lên ${pri}`,
+        'keHoach','Hệ thống AI');
+    });
+
+    saveOrders();
+    return true;
   }
   return false;
 }
@@ -3022,66 +3041,124 @@ function installPWA(){
 }
 
 // Service Worker + Auto-update
+// ════ AUTO-UPDATE ENGINE ════════════════════════════════════
+// Chiến lược: SW check 30s + ETag polling 60s + idle reload 2p
+// → Đảm bảo cập nhật tối đa trong 1-2 phút sau khi deploy
+// ═══════════════════════════════════════════════════════════
+
+let _reloading = false;
+
+// Hàm reload an toàn: không reload khi đang gõ/modal
+function safeReload(force){
+  if(_reloading) return;
+  const modalOpen = document.querySelector('.modal.open');
+  const focused   = document.activeElement;
+  const isTyping  = focused&&(focused.tagName==='INPUT'||focused.tagName==='TEXTAREA'||focused.tagName==='SELECT');
+  if(force||(!modalOpen&&!isTyping)){
+    _reloading=true;
+    window.location.reload();
+  } else {
+    // Đang gõ → đợi 30s rồi thử lại
+    setTimeout(()=>{ _reloading=false; safeReload(false); }, 30000);
+  }
+}
+
+// 1. SERVICE WORKER — check update 30 giây/lần
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js')
     .then(reg=>{
-      // Kiểm tra update SW mỗi 5 phút
-      setInterval(()=>reg.update(), 5*60*1000);
-      // Khi có SW mới sẵn sàng → reload ngay
+      // Check update ngay khi load, sau đó mỗi 30s
+      reg.update();
+      setInterval(()=>reg.update(), 30*1000);
+
       reg.addEventListener('updatefound',()=>{
-        const nw = reg.installing;
-        if(!nw) return;
+        const nw=reg.installing; if(!nw) return;
         nw.addEventListener('statechange',()=>{
-          if(nw.state==='installed' && navigator.serviceWorker.controller){
-            // Có bản mới: thông báo và reload
+          if(nw.state==='installed'&&navigator.serviceWorker.controller){
             showUpdateBanner();
           }
         });
       });
     }).catch(()=>{});
 
-  // Khi SW mới activate (tab khác đã reload trước)
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(!_reloading){ _reloading=true; window.location.reload(); }
+    safeReload(false);
   });
 }
 
-let _reloading = false;
-let _idleTimer = null;
-const IDLE_RELOAD = 5 * 60 * 1000; // 5 phút
+// 2. ETAG POLLING — kiểm tra index.html có thay đổi không (60s/lần)
+// Khi deploy file mới lên GitHub Pages, ETag/Last-Modified thay đổi
+let _lastEtag = '';
+async function checkForNewVersion(){
+  try{
+    const r = await fetch(location.href, {method:'HEAD', cache:'no-store'});
+    const etag = r.headers.get('etag')||r.headers.get('last-modified')||'';
+    if(!etag) return;
+    if(!_lastEtag){ _lastEtag=etag; return; } // Lần đầu: chỉ lưu
+    if(etag !== _lastEtag){
+      _lastEtag = etag;
+      showUpdateBanner(); // Có file mới → hiện banner
+    }
+  }catch(e){}
+}
+// Check ngay sau 5s rồi mỗi 60s
+setTimeout(()=>{
+  checkForNewVersion();
+  setInterval(checkForNewVersion, 60*1000);
+}, 5000);
 
-// Auto-reload sau 5 phút không tương tác — đảm bảo luôn dùng bản mới nhất
+// 3. IDLE RELOAD — tự reload sau 2 phút không tương tác
+let _idleTimer = null;
+const IDLE_RELOAD = 2*60*1000; // 2 phút
+
 function resetIdleTimer(){
   clearTimeout(_idleTimer);
-  _idleTimer = setTimeout(()=>{
-    // Chỉ reload khi không đang dùng modal và không đang gõ
-    const modalOpen = document.querySelector('.modal.open');
-    const focused   = document.activeElement;
-    const isTyping  = focused && (focused.tagName==='INPUT'||focused.tagName==='TEXTAREA'||focused.tagName==='SELECT');
-    if(!modalOpen && !isTyping){
-      window.location.reload();
-    } else {
-      // Đang dùng modal hoặc đang gõ → đợi thêm 2 phút
-      _idleTimer = setTimeout(()=>window.location.reload(), 2*60*1000);
-    }
-  }, IDLE_RELOAD);
+  _idleTimer = setTimeout(()=>safeReload(false), IDLE_RELOAD);
 }
-
-// Theo dõi tương tác để reset timer
-['click','touchstart','keydown','scroll'].forEach(ev=>{
+['click','touchstart','keydown','scroll','pointerdown'].forEach(ev=>{
   document.addEventListener(ev, resetIdleTimer, {passive:true});
 });
-resetIdleTimer(); // bắt đầu đếm ngay khi load
+resetIdleTimer();
 
-// Banner thông báo có bản cập nhật mới
+// Banner thông báo update — đẹp hơn, có countdown
 function showUpdateBanner(){
-  let b = document.getElementById('updateBanner');
-  if(b) return;
-  b = document.createElement('div');
+  if(document.getElementById('updateBanner')) return;
+  const b = document.createElement('div');
   b.id = 'updateBanner';
-  b.style.cssText='position:fixed;top:calc(var(--top)+8px);left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap';
-  b.innerHTML='🆕 Có bản cập nhật mới! <button onclick="window.location.reload()" style="background:var(--brand2);color:#fff;border:none;border-radius:7px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">Cập nhật ngay</button><button onclick="this.parentElement.remove()" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1">✕</button>';
+  b.style.cssText = [
+    'position:fixed','top:calc(var(--top)+var(--safe-t)+10px)',
+    'left:50%','transform:translateX(-50%)',
+    'background:linear-gradient(135deg,#0f172a,#1e3a8a)',
+    'color:#fff','padding:11px 16px','border-radius:14px',
+    'font-size:13px','font-weight:600','z-index:9999',
+    'display:flex','align-items:center','gap:10px',
+    'box-shadow:0 4px 24px rgba(0,0,0,.5)',
+    'border:1px solid rgba(255,255,255,.1)',
+    'animation:ann-slide .4s cubic-bezier(.34,1.56,.64,1)',
+    'max-width:92vw'
+  ].join(';');
+
+  // Countdown 10s rồi tự reload
+  let countdown = 10;
+  const updateCountdown = ()=>{
+    b.innerHTML = `<span style="font-size:16px">🆕</span>
+      <span>Có bản mới! Tự cập nhật sau <b id="cdNum">${countdown}</b>s</span>
+      <button onclick="safeReload(true)" style="background:var(--brand2);color:#fff;border:none;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;white-space:nowrap">Cập nhật ngay</button>
+      <button onclick="this.closest('#updateBanner').remove();clearInterval(_cdInterval)" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">✕</button>`;
+  };
+  updateCountdown();
   document.body.appendChild(b);
+
+  // Đếm ngược và tự reload
+  window._cdInterval = setInterval(()=>{
+    countdown--;
+    const el=document.getElementById('cdNum');
+    if(el) el.textContent=countdown;
+    if(countdown<=0){
+      clearInterval(window._cdInterval);
+      safeReload(false);
+    }
+  }, 1000);
 }
 </script>
 </body>

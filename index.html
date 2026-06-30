@@ -3024,36 +3024,28 @@ function setCell(workerId, day, value){
   if(totalEl) totalEl.textContent = computeTotal(workerId);
 }
 
-// Chuyển 1 ô nhập công thành số công thực tế (đơn vị: công, 1 công = 8 giờ).
-// Quy ước nhập: "1" = 1 công · "0.5" = nửa công · "0" = nghỉ.
-// Khi có làm thêm giờ, phần thập phân SAU số nguyên ≥1 được hiểu là SỐ GIỜ
-// làm thêm (không phải phần lẻ của công), ví dụ "1.2" = 1 công (8h) + 2 giờ
-// làm thêm = 1 + 2/8 = 1.25 công. "2.45" = 2 công + 4,5 giờ thêm giờ.
-// Nếu phần nguyên = 0 thì phần thập phân vẫn là phần lẻ công như bình thường
-// (ví dụ "0.5" = nửa công, không phải 5 giờ).
+// Chuyển 1 ô nhập công thành số công thực tế.
+// Quy ước nhập: "1" = 1 công (8 giờ) · "0.5" = nửa công · "0" = nghỉ.
+// Phần thập phân (sau dấu chấm) được hiểu là SỐ GIỜ LÀM THÊM trong ngày
+// đó, ví dụ "1.2" = 1 công + làm thêm 2 giờ.
 function parseCongValue(raw){
   if(raw===undefined||raw===null) return 0;
   const s = String(raw).trim().replace(',', '.');
   if(s==='') return 0;
-  const m = s.match(/^(\d+)(?:\.(\d+))?$/);
-  if(!m) { const n=parseFloat(s); return isNaN(n)?0:n; } // fallback cho giá trị lạ
-  const intPart = parseInt(m[1], 10);
-  const decStr = m[2] || '';
-  if(decStr==='') return intPart;
-  if(intPart===0) return parseFloat('0.'+decStr); // phần lẻ công (vd 0.5 = nửa công)
-  // Phần thập phân = số giờ làm thêm chia cho 10 (vì 1 chữ số thập phân ⇄ 1 chữ số giờ):
-  // "1.2" → 0.2×10 = 2 giờ · "1.20" → 0.20×10 = 2 giờ (không bị hiểu nhầm thành 20 giờ)
-  // "1.25" → 0.25×10 = 2.5 giờ (hỗ trợ làm thêm nửa giờ)
-  const otHours = parseFloat('0.'+decStr) * 10;
-  return Math.round((intPart + otHours/8) * 1000) / 1000;
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
 }
 
+// Tổng công của cả tháng = CỘNG DỒN TRỰC TIẾP các ô đã nhập (giữ nguyên
+// quy ước số công.giờ làm thêm), ví dụ ngày 1 chấm 1.2 (1 công + thêm 2h),
+// ngày 2 chấm 1.2 (1 công + thêm 2h) ⇒ Tổng công = 2.4
+// (2 công + tổng cộng 4 giờ làm thêm trong tháng).
 function computeTotal(workerId){
   const ym = curYM();
   const rowData = DB.attendance[ym]?.[workerId] || {};
   let sum = 0;
   Object.values(rowData).forEach(v=>{ sum += parseCongValue(v); });
-  return (Math.round(sum*100)/100).toString();
+  return (Math.round(sum*10)/10).toString();
 }
 
 // Tự động theo dõi tháng hiện tại theo thời gian thực: khi hết tháng (sang

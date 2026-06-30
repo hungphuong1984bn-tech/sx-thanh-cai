@@ -382,6 +382,42 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 
 /* ── WARN BANNER ── */
 .warn-banner{background:var(--amber-l);color:var(--amber);padding:10px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:600;border-left:3px solid var(--amber-m)}
+/* ── DỞ DANG 2 CỘT ── */
+.dd-layout{display:flex;flex-direction:column;gap:12px}
+.dd-col{border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--card)}
+.dd-col-hd{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--border)}
+.dd-col-hd-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.dd-col-hd-info{flex:1;min-width:0}
+.dd-col-hd-title{font-size:13px;font-weight:800;color:var(--text);line-height:1.2}
+.dd-col-hd-sub{font-size:10.5px;color:var(--text4);font-weight:500;margin-top:1px}
+.dd-col-hd-badge{font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap}
+/* Mini card trong cột Đơn mới */
+.dd-new-card{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;cursor:pointer;transition:background .1s}
+.dd-new-card:last-child{border-bottom:none}
+.dd-new-card:active{background:var(--bg)}
+.dd-new-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.dd-new-body{flex:1;min-width:0}
+.dd-new-cust{font-size:13.5px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
+.dd-new-spec{font-size:11.5px;color:var(--text2);margin-bottom:3px}
+.dd-new-tags{display:flex;flex-wrap:wrap;gap:4px}
+.dd-new-tag{font-size:10px;padding:1px 7px;border-radius:5px;font-weight:700;white-space:nowrap}
+.dd-new-time{font-size:10.5px;color:var(--text4);margin-top:4px}
+/* Mini card trong cột Ưu tiên */
+.dd-pri-card{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;cursor:pointer;transition:background .1s;position:relative}
+.dd-pri-card:last-child{border-bottom:none}
+.dd-pri-card:active{background:var(--bg)}
+.dd-pri-num{width:26px;height:26px;border-radius:8px;font-size:12px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.dd-pri-body{flex:1;min-width:0}
+.dd-pri-cust{font-size:13px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-pri-spec{font-size:11px;color:var(--text2);margin-top:2px;margin-bottom:3px}
+.dd-pri-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.dd-pri-tag{font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700;background:var(--bg);border:1px solid var(--border);color:var(--text3);white-space:nowrap}
+.dd-pri-tag.status-r{background:#dbeafe;border-color:#93c5fd;color:var(--brand)}
+.dd-pri-tag.status-p{background:var(--amber-l);border-color:var(--amber-m);color:var(--amber)}
+.dd-pri-tag.kg{background:#f0fdf4;border-color:#86efac;color:#166534}
+.dd-empty-col{padding:24px 16px;text-align:center;color:var(--text4);font-size:12.5px}
+/* Desktop: 2 cột cạnh nhau */
+@media(min-width:700px){.dd-layout{flex-direction:row}.dd-col{flex:1;min-width:0}}
 
 /* ── ANNOUNCE BANNER: hiện cố định phía trên mọi tab ── */
 #announceBanner{display:none;position:sticky;top:0;z-index:90;margin:0 0 0 0;padding:0;background:transparent}
@@ -898,16 +934,27 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         <option value="Khác">Khác</option>
       </select>
     </div>
-    <div class="modal-row">
-      <div class="field"><div class="field-lbl">Dày (mm)</div><input id="ofThk" class="field-inp" type="number" placeholder="0"></div>
-      <div class="field"><div class="field-lbl">Rộng (mm)</div><input id="ofW" class="field-inp" type="number" placeholder="0"></div>
+    <!-- Φ: thanh tròn -->
+    <div class="field">
+      <div class="field-lbl" style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:15px;font-weight:800;color:#b45309">Φ</span> Đường kính (mm)
+        <span style="font-size:10px;color:var(--text4);font-weight:400">— Chỉ nhập cho thanh tròn</span>
+      </div>
+      <input id="ofPhi" class="field-inp" type="number" step="0.1" placeholder="VD: 6, 8, 10... (để trống nếu thanh dẹt)" oninput="calcKgAuto()">
     </div>
     <div class="modal-row">
-      <div class="field"><div class="field-lbl">Dài (mm)</div><input id="ofL" class="field-inp" type="number" placeholder="4000" value="4000"></div>
-      <div class="field"><div class="field-lbl">Số thanh</div><input id="ofQty" class="field-inp" type="number" placeholder="0"></div>
+      <div class="field"><div class="field-lbl">Dày (mm) <span style="font-size:10px;color:var(--text4)">bỏ qua nếu nhập Φ</span></div><input id="ofThk" class="field-inp" type="number" placeholder="0" oninput="calcKgAuto()"></div>
+      <div class="field"><div class="field-lbl">Rộng (mm) <span style="font-size:10px;color:var(--text4)">bỏ qua nếu nhập Φ</span></div><input id="ofW" class="field-inp" type="number" placeholder="0" oninput="calcKgAuto()"></div>
     </div>
     <div class="modal-row">
-      <div class="field"><div class="field-lbl">KG</div><input id="ofKg" class="field-inp" type="number" step="0.01" placeholder="Tự tính"></div>
+      <div class="field"><div class="field-lbl">Dài (mm)</div><input id="ofL" class="field-inp" type="number" placeholder="4000" value="4000" oninput="calcKgAuto()"></div>
+      <div class="field"><div class="field-lbl">Số cây / Số thanh</div><input id="ofQty" class="field-inp" type="number" placeholder="0" oninput="calcKgAuto()"></div>
+    </div>
+    <div class="modal-row">
+      <div class="field">
+        <div class="field-lbl">KG <span id="kgAutoLabel" style="font-size:10px;color:var(--green-m);font-weight:600"></span></div>
+        <input id="ofKg" class="field-inp" type="number" step="0.01" placeholder="Tự tính">
+      </div>
       <div class="field"><div class="field-lbl">Hạn giao</div><input id="ofDate" class="field-inp" type="date"></div>
     </div>
     <div class="field"><div class="field-lbl">Loại / Quy cách</div><input id="ofType" class="field-inp" placeholder="VD: Thanh dẹt, Lục giác..."></div>
@@ -1905,17 +1952,29 @@ function orderCard(o, showStatus=true){
     </div>
     <div class="card-customer">${o.customer||'—'}${o.po?`<small>PO: ${o.po}</small>`:''}</div>
     <div class="card-id">🔖 ${o.id||'—'}${o.createdAt?` · 🕐 ${fmtDateTime(o.createdAt)}`:''}</div>
-    <div class="spec-grid">
-      <div class="spec-box"><div class="spec-box-val">${o.thickness||'?'}</div><div class="spec-box-lbl">Dày (mm)</div></div>
-      <div class="spec-box"><div class="spec-box-val">${o.width||'?'}</div><div class="spec-box-lbl">Rộng (mm)</div></div>
-      <div class="spec-box"><div class="spec-box-val">${o.length||'?'}</div><div class="spec-box-lbl">Dài (mm)</div></div>
-      <div class="spec-box" style="background:#eff6ff;border-color:#bfdbfe"><div class="spec-box-val" style="color:var(--brand)">${o.qty||0}</div><div class="spec-box-lbl" style="color:var(--brand3)">Số thanh</div></div>
-    </div>
-    <div class="spec-row">
-      <span class="spec-tag mat">${o.material||'—'}</span>
-      ${o.type?`<span class="spec-tag">${o.type}</span>`:''}
-      <span class="spec-tag kg">⚖️ ${o.kg||0} kg</span>
-    </div>
+    ${o.isRound&&o.phi
+      ? `<div class="spec-grid">
+           <div class="spec-box" style="background:#fffbeb;border-color:#fcd34d"><div class="spec-box-val" style="color:#b45309;font-size:16px">Φ${o.phi}</div><div class="spec-box-lbl" style="color:#92400e">Đường kính</div></div>
+           <div class="spec-box"><div class="spec-box-val">${o.length||'?'}mm</div><div class="spec-box-lbl">Dài (mm)</div></div>
+           <div class="spec-box" style="background:#eff6ff;border-color:#bfdbfe"><div class="spec-box-val" style="color:var(--brand)">${o.qty||0}</div><div class="spec-box-lbl" style="color:var(--brand3)">Số cây</div></div>
+           <div class="spec-box" style="background:#f0fdf4;border-color:#86efac"><div class="spec-box-val" style="color:#166534;font-size:12px">${o.kg||0}</div><div class="spec-box-lbl" style="color:#166534">KG</div></div>
+         </div>
+         <div class="spec-row">
+           <span class="spec-tag mat">${o.material||'—'}</span>
+           ${o.type?`<span class="spec-tag">${o.type}</span>`:''}
+           <span class="spec-tag kg">⚖️ ${o.kg||0} kg</span>
+         </div>`
+      : `<div class="spec-grid">
+           <div class="spec-box"><div class="spec-box-val">${o.thickness||'?'}</div><div class="spec-box-lbl">Dày (mm)</div></div>
+           <div class="spec-box"><div class="spec-box-val">${o.width||'?'}</div><div class="spec-box-lbl">Rộng (mm)</div></div>
+           <div class="spec-box"><div class="spec-box-val">${o.length||'?'}</div><div class="spec-box-lbl">Dài (mm)</div></div>
+           <div class="spec-box"><div class="spec-box-val" style="color:var(--brand)">${o.qty||0}</div><div class="spec-box-lbl">Số thanh</div></div>
+         </div>
+         <div class="spec-row">
+           <span class="spec-tag mat">${o.material||'—'}</span>
+           ${o.type?`<span class="spec-tag">${o.type}</span>`:''}
+           <span class="spec-tag kg">⚖️ ${o.kg||0} kg</span>
+         </div>`}
     ${o.deliveryDate?`<div class="card-due${overdue?' overdue':''}">📅 Hạn giao: ${fmtDate(o.deliveryDate)}</div>`:''}
     ${o.note?`<div class="card-note">📝 ${o.note}</div>`:''}
     ${renderProgressBar(o)}
@@ -1962,7 +2021,7 @@ function dashMiniCard(o, onClick){
       <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.customer||'—'}</span>
       <span style="font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:20px;background:${pc}20;color:${pc};white-space:nowrap">${o.priority||''}</span>
     </div>
-    <div class="dash-mini-spec">${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm · ×${o.qty||0} · ⚖️${o.kg||0}kg</div>
+    <div class="dash-mini-spec">${o.isRound&&o.phi?`Φ${o.phi}×${o.length||'?'}mm · ×${o.qty||0} cây`:`${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm · ×${o.qty||0}`} · ⚖️${o.kg||0}kg</div>
     ${o.po||o.type?`<div style="font-size:10.5px;color:var(--text4);margin-top:1px">${o.po?'PO:'+o.po+' ':''} ${o.type||''}</div>`:''}
     ${pct>0?`<div style="margin-top:4px">
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}%</span></div>
@@ -1988,7 +2047,7 @@ function dashMiniCardNew(o){
       <span class="new-card-cust">${o.customer||'—'}</span>
       <span class="badge ${si.cls}" style="font-size:9px;padding:1px 6px;border-radius:10px">${si.label}</span>
     </div>
-    <div class="new-card-spec">${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm${o.type?' — '+o.type:''}</div>
+    <div class="new-card-spec">${o.isRound&&o.phi?`Φ${o.phi}×${o.length||'?'}mm`:`${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm`}${o.type?' — '+o.type:''}</div>
     <div class="new-card-row">
       <span class="new-card-chip pri" style="background:${pc}18;border-color:${pc}60;color:${pc}">${o.priority||'—'}</span>
       <span class="new-card-chip">×${o.qty||0} thanh</span>
@@ -2305,58 +2364,158 @@ function matchSearch(o, q){
     .some(v=>(v||'').toLowerCase().includes(s));
 }
 
+// ── Màu theo ưu tiên ──
+function priColor(pri){
+  return PRI_COLOR[pri]||'#64748b';
+}
+
+// ── Mini card cột ĐƠN MỚI ──
+function ddNewCard(o){
+  const s = o.status==='cutting'?'running':o.status;
+  const pc = priColor(o.priority);
+  const si = statusInfo(s);
+  const ai = aiAnalyzeOrder(o);
+  const topW = ai.warnings[0];
+  const age = o.createdAt ? Date.now()-o.createdAt : 0;
+  const ageStr = age<3600000
+    ? Math.floor(age/60000)+'p trước'
+    : age<86400000
+      ? Math.floor(age/3600000)+'g trước'
+      : Math.floor(age/86400000)+'ngày trước';
+  const isNew = age < 3600000;
+  return `<div class="dd-new-card" onclick="goTab('keHoach')">
+    <div class="dd-new-dot" style="background:${s==='running'?'#3b82f6':s==='done'?'#10b981':'#f59e0b'};${s==='running'?'animation:pulse 1.5s infinite':''}"></div>
+    <div class="dd-new-body">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
+        <span class="dd-new-cust">${o.customer||'—'}</span>
+        ${isNew?'<span style="font-size:9px;font-weight:800;background:#dbeafe;color:var(--brand);padding:1px 6px;border-radius:10px;flex-shrink:0">MỚI</span>':''}
+      </div>
+      <div class="dd-new-spec">${o.isRound&&o.phi?`Φ${o.phi}×${o.length||'?'}mm`:`${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm`}${o.type?' · '+o.type:''}</div>
+      <div class="dd-new-tags">
+        <span class="dd-new-tag" style="background:${pc}18;color:${pc};border:1px solid ${pc}40">${o.priority||'—'}</span>
+        <span class="dd-new-tag" style="background:var(--bg);border:1px solid var(--border);color:var(--text2)">×${o.qty||0} thanh</span>
+        <span class="dd-new-tag" style="background:#f0fdf4;border:1px solid #86efac;color:#166534">⚖️${o.kg||0}kg</span>
+        <span class="badge ${si.cls}" style="font-size:9px;padding:1px 6px;border-radius:10px">${si.label}</span>
+      </div>
+      ${topW?`<div style="margin-top:4px;font-size:10.5px;font-weight:700;color:${topW.level==='red'?'#dc2626':'#b45309'};background:${topW.level==='red'?'#fee2e2':'#fef3c7'};padding:2px 7px;border-radius:5px;display:inline-block">${topW.msg}</div>`:''}
+      <div class="dd-new-time">🕐 ${ageStr}${o.po?' · PO: '+o.po:''}</div>
+    </div>
+  </div>`;
+}
+
+// ── Mini card cột ƯU TIÊN ──
+function ddPriCard(o, rank){
+  const s   = o.status==='cutting'?'running':o.status;
+  const pc  = priColor(o.priority);
+  const si  = statusInfo(s);
+  const ai  = aiAnalyzeOrder(o);
+  const pct = o.qty&&o.doneQty?Math.min(100,Math.round(o.doneQty/o.qty*100)):0;
+  const elMin = o.startedAt&&s==='running'?Math.floor((Date.now()-o.startedAt)/60000):0;
+  const elStr = elMin>=60?Math.floor(elMin/60)+'g'+(elMin%60?elMin%60+'p':''):elMin>0?elMin+'p':'';
+  const overdue = s!=='done'&&o.deliveryDate&&new Date(o.deliveryDate)<new Date();
+  const canEdit = isAdmin(), canStatus = isStaff();
+  const sp = specStr(o), ql = qtyLabel(o);
+  const bgB = ai.urgencyTag==='critical'?'border-left:3px solid #dc2626':ai.urgencyTag==='warning'?'border-left:3px solid #f59e0b':`border-left:3px solid ${pc}`;
+  return `<div class="dd-pri-card" style="${bgB}">
+    <!-- Header: số thứ tự + khách + priority + status -->
+    <div class="dd-pri-num" style="background:${pc}">${rank}</div>
+    <div class="dd-pri-body">
+      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:3px">
+        <span class="dd-pri-cust" style="font-size:14px">${o.customer||'—'}</span>
+        <span style="background:${pc}20;color:${pc};font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;border:1px solid ${pc}40">${o.priority||'—'}</span>
+        <span class="badge ${si.cls}" style="font-size:9.5px;padding:2px 7px">${si.label}</span>
+        ${o.aiPromoted?'<span style="font-size:9px;font-weight:800;background:#dbeafe;color:var(--brand);padding:1px 6px;border-radius:10px">↑ AI</span>':''}
+        ${s==='running'&&elStr?`<span style="font-size:10px;font-weight:700;background:#0f172a;color:#60a5fa;padding:2px 7px;border-radius:6px;font-family:monospace">⏱ ${elStr}</span>`:''}
+      </div>
+
+      <!-- Spec -->
+      ${o.isRound&&o.phi
+        ? `<div style="font-size:12px;font-weight:700;color:#92400e;background:#fef3c7;padding:3px 9px;border-radius:6px;border:1px solid #fcd34d;display:inline-block;margin-bottom:4px">Φ ${o.phi} × ${o.length||'?'}mm · ${ql}</div>`
+        : `<div style="font-size:12px;color:var(--text2);margin-bottom:4px">${sp} · <b>${ql}</b>${o.type?' · '+o.type:''}</div>`}
+
+      <!-- Tags -->
+      <div class="dd-pri-row">
+        <span class="dd-pri-tag kg">⚖️ ${o.kg||0}kg</span>
+        ${o.material?`<span class="dd-pri-tag">${o.material}</span>`:''}
+        ${o.po?`<span class="dd-pri-tag">PO: ${o.po}</span>`:''}
+        ${overdue?'<span class="dd-pri-tag" style="background:#fee2e2;border-color:#fca5a5;color:#dc2626">⚠️ Quá hạn</span>':''}
+        ${o.deliveryDate?`<span class="dd-pri-tag">📅 ${fmtDate(o.deliveryDate)}</span>`:''}
+      </div>
+
+      <!-- Progress -->
+      ${pct>0?`<div style="margin-top:5px"><div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}% (${o.doneQty}/${o.qty})</span></div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px"></div></div></div>`:''}
+
+      <!-- AI warnings -->
+      ${ai.warnings.length?`<div style="margin-top:5px;display:flex;flex-direction:column;gap:3px">${ai.warnings.map(w=>`<div style="font-size:10.5px;font-weight:700;color:${w.level==='red'?'#dc2626':'#b45309'};background:${w.level==='red'?'#fee2e2':'#fef3c7'};padding:3px 8px;border-radius:5px">${w.level==='red'?'🚨':'⚠️'} ${w.msg}</div>`).join('')}</div>`:''}
+
+      <!-- Ghi chú -->
+      ${o.note?`<div style="font-size:11px;color:var(--text3);margin-top:4px">📝 ${o.note}</div>`:''}
+
+      <!-- Nút thao tác -->
+      ${canStatus?`<div class="card-actions" style="margin-top:8px;padding:0">
+        ${s!=='running'?`<button class="ca-btn active-run" onclick="setStatus('${o.id}','running')">⚙️ Chạy</button>`:''}
+        ${s==='running'?`<button class="ca-btn active-done" onclick="setStatus('${o.id}','done')">✅ Xong</button>`:''}
+        ${s!=='pending'?`<button class="ca-btn active-wait" onclick="setStatus('${o.id}','pending')">⏳ Chờ</button>`:''}
+        <button class="ca-btn" style="color:var(--brand)" onclick="openProgress('${o.id}')">📊</button>
+        ${canEdit?`<button class="ca-btn" onclick="editOrder('${o.id}')">✏️</button><button class="ca-btn danger" onclick="deleteOrder('${o.id}')">🗑</button>`:''}
+      </div>`:''}
+    </div>
+  </div>`;
+}
+
 function renderDorDang(){
-  // FIX: Giữ lại giá trị search khi re-render
   const inp = document.getElementById('srchInp');
   if(inp) searchQ = inp.value;
-
-  let list = DB.orders.filter(o=>o.status!=='done');
-  if(filterStatus!=='all') list=list.filter(o=>(filterStatus==='running'
-    ? o.status==='running'||o.status==='cutting'
-    : o.status===filterStatus));
-  if(searchQ) list=list.filter(o=>matchSearch(o,searchQ));
-
-  // Sắp xếp: mới nhất lên trên (theo createdAt), trong cùng thời gian thì theo priority
-  list.sort((a,b)=>{
-    const tA=a.createdAt||0, tB=b.createdAt||0;
-    if(tB!==tA) return tB-tA;  // mới nhất lên trước
-    const p=x=>parseInt((x.priority||'GẤP 9').replace('GẤP ',''));
-    return p(a)-p(b);
+  const getPri = o => parseInt((o.priority||'GẤP 9').replace('GẤP ',''))||9;
+  let allActive = DB.orders.filter(o=>o.status!=='done');
+  const total = allActive.length;
+  let newList = [...allActive].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  // Cột 2: sort theo GẤP 1 → GẤP 8, trong cùng cấp thì AI score cao lên trước
+  let priList = [...allActive].sort((a,b)=>{
+    const pa=getPri(a), pb=getPri(b);
+    if(pa!==pb) return pa-pb; // GẤP 1 trước GẤP 2...
+    const aiA=aiAnalyzeOrder(a), aiB=aiAnalyzeOrder(b);
+    return aiB.score-aiA.score; // cùng cấp: nguy cấp hơn lên đầu
   });
-
-  const count = list.length;
-  const total = DB.orders.filter(o=>o.status!=='done').length;
-
+  if(searchQ){ newList=newList.filter(o=>matchSearch(o,searchQ)); priList=priList.filter(o=>matchSearch(o,searchQ)); }
+  if(filterStatus!=='all'){ const f=o=>filterStatus==='running'?o.status==='running'||o.status==='cutting':o.status===filterStatus; newList=newList.filter(f); priList=priList.filter(f); }
   $('mc').innerHTML=`
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="search-inp" id="srchInp" type="search" placeholder="🔍 Tìm khách hàng, PO, mã, loại..." value="${searchQ}" autocomplete="off" autocorrect="off" spellcheck="false">
-      ${searchQ?`<button onclick="clearSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:18px;cursor:pointer;color:var(--text4);line-height:1">✕</button>`:''}
+      <input class="search-inp" id="srchInp" type="search" placeholder="🔍 Tìm khách hàng, PO, mã, kích thước..." value="${searchQ}" autocomplete="off" spellcheck="false">
+      ${searchQ?`<button onclick="clearSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:18px;cursor:pointer;color:var(--text4)">✕</button>`:''}
     </div>
     <div class="chips">
       <button class="chip${filterStatus==='all'?' active':''}" onclick="filterStatus='all';renderDorDang()">Tất cả (${total})</button>
       <button class="chip${filterStatus==='pending'?' active':''}" onclick="filterStatus='pending';renderDorDang()">⏳ Chờ SX</button>
       <button class="chip${filterStatus==='running'?' active':''}" onclick="filterStatus='running';renderDorDang()">⚙️ Đang chạy</button>
     </div>
-    ${searchQ?`<div style="font-size:12px;color:var(--text3);padding:2px 0 4px">Kết quả: <b>${count}</b> đơn</div>`:''}
-    ${list.length?`<div class="card-grid">`+list.map(o=>orderCard(o,false)).join('')+`</div>`:(searchQ
-        ? `<div class="empty"><div class="empty-icon">🔍</div>Không tìm thấy "<b>${searchQ}</b>"</div>`
-        : '<div class="empty"><div class="empty-icon">✅</div>Không có đơn nào phù hợp</div>')}
+    ${searchQ?`<div style="font-size:12px;color:var(--text3);padding:0 0 4px">Tìm thấy <b>${priList.length}</b> đơn</div>`:''}
+    ${total===0&&!searchQ
+      ? '<div class="empty"><div class="empty-icon">📦</div>Chưa có đơn nào đang làm</div>'
+      : `<div class="dd-layout">
+      <div class="dd-col">
+        <div class="dd-col-hd" style="background:linear-gradient(135deg,#eff6ff,#dbeafe)">
+          <div class="dd-col-hd-icon" style="background:#dbeafe">🆕</div>
+          <div class="dd-col-hd-info"><div class="dd-col-hd-title">Đơn mới cập nhật</div><div class="dd-col-hd-sub">Thứ tự theo thời gian nhập</div></div>
+          <span class="dd-col-hd-badge" style="background:var(--brand);color:#fff">${newList.length}</span>
+        </div>
+        <div>${newList.length?newList.slice(0,10).map(o=>ddNewCard(o)).join(''):'<div class="dd-empty-col">Không có đơn nào</div>'}
+        ${newList.length>10?`<div style="padding:8px 14px;text-align:center"><button onclick="goTab('keHoach')" style="font-size:12px;color:var(--brand);border:1px solid #bfdbfe;background:#eff6ff;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${newList.length} →</button></div>`:''}</div>
+      </div>
+      <div class="dd-col">
+        <div class="dd-col-hd" style="background:linear-gradient(135deg,#fff7ed,#fef3c7)">
+          <div class="dd-col-hd-icon" style="background:#fef3c7">🤖</div>
+          <div class="dd-col-hd-info"><div class="dd-col-hd-title">Thứ tự ưu tiên AI</div><div class="dd-col-hd-sub">Nguy cấp nhất · Ưu tiên cao nhất</div></div>
+          <span class="dd-col-hd-badge" style="background:#f59e0b;color:#fff">${priList.length}</span>
+        </div>
+        <div>${priList.length?priList.slice(0,10).map((o,i)=>ddPriCard(o,i+1)).join(''):'<div class="dd-empty-col">Không có đơn nào</div>'}
+        ${priList.length>10?`<div style="padding:8px 14px;text-align:center"><button onclick="goTab('keHoach')" style="font-size:12px;color:#b45309;border:1px solid #fde68a;background:#fffbeb;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${priList.length} →</button></div>`:''}</div>
+      </div>
+    </div>`}
   `;
-
-  // Gắn event listener sau khi render — fix lỗi oninput inline bị mất
-  const newInp = document.getElementById('srchInp');
-  if(newInp){
-    newInp.focus();  // giữ focus sau re-render
-    // Đặt cursor về cuối
-    const val = newInp.value;
-    newInp.value = '';
-    newInp.value = val;
-    newInp.addEventListener('input', function(){
-      searchQ = this.value;
-      renderDorDang();
-    });
-  }
+  const ni=document.getElementById('srchInp');
+  if(ni){ const v=ni.value;ni.value='';ni.value=v; ni.addEventListener('input',function(){searchQ=this.value;renderDorDang();}); }
 }
 
 function clearSearch(){
@@ -2365,6 +2524,16 @@ function clearSearch(){
 }
 
 // Kế hoạch SX
+// Spec string: thanh tròn "Φ6×300mm" hoặc thanh dẹt "12×50×4000mm"
+function specStr(o){
+  if(o.phi && o.isRound){
+    return `Φ${o.phi}×${o.length||'?'}mm`;
+  }
+  return `${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm`;
+}
+// Label số cây/thanh
+function qtyLabel(o){ return o.isRound?`${o.qty||0} cây`:`${o.qty||0} thanh`; }
+
 function fmtDuration(ms){
   if(!ms||ms<0) return '';
   const totalMin=Math.floor(ms/60000);
@@ -2400,17 +2569,29 @@ function orderCardKH(o, seq){
     </div>
     <div class="card-customer">${o.customer||'—'}${o.po?`<small>PO: ${o.po}</small>`:''}</div>
     <div class="card-id">🔖 ${o.id||'—'}${o.createdAt?` · 🕐 ${fmtDateTime(o.createdAt)}`:''}</div>
-    <div class="spec-grid">
-      <div class="spec-box"><div class="spec-box-val">${o.thickness||'?'}</div><div class="spec-box-lbl">Dày (mm)</div></div>
-      <div class="spec-box"><div class="spec-box-val">${o.width||'?'}</div><div class="spec-box-lbl">Rộng (mm)</div></div>
-      <div class="spec-box"><div class="spec-box-val">${o.length||'?'}</div><div class="spec-box-lbl">Dài (mm)</div></div>
-      <div class="spec-box" style="background:#eff6ff;border-color:#bfdbfe"><div class="spec-box-val" style="color:var(--brand)">${o.qty||0}</div><div class="spec-box-lbl" style="color:var(--brand3)">Số thanh</div></div>
-    </div>
-    <div class="spec-row">
-      <span class="spec-tag mat">${o.material||'—'}</span>
-      ${o.type?`<span class="spec-tag">${o.type}</span>`:''}
-      <span class="spec-tag kg">⚖️ ${o.kg||0} kg</span>
-    </div>
+    ${o.isRound&&o.phi
+      ? `<div class="spec-grid">
+           <div class="spec-box" style="background:#fffbeb;border-color:#fcd34d"><div class="spec-box-val" style="color:#b45309;font-size:16px">Φ${o.phi}</div><div class="spec-box-lbl" style="color:#92400e">Đường kính</div></div>
+           <div class="spec-box"><div class="spec-box-val">${o.length||'?'}mm</div><div class="spec-box-lbl">Dài (mm)</div></div>
+           <div class="spec-box" style="background:#eff6ff;border-color:#bfdbfe"><div class="spec-box-val" style="color:var(--brand)">${o.qty||0}</div><div class="spec-box-lbl" style="color:var(--brand3)">Số cây</div></div>
+           <div class="spec-box" style="background:#f0fdf4;border-color:#86efac"><div class="spec-box-val" style="color:#166534;font-size:12px">${o.kg||0}</div><div class="spec-box-lbl" style="color:#166534">KG</div></div>
+         </div>
+         <div class="spec-row">
+           <span class="spec-tag mat">${o.material||'—'}</span>
+           ${o.type?`<span class="spec-tag">${o.type}</span>`:''}
+           <span class="spec-tag kg">⚖️ ${o.kg||0} kg</span>
+         </div>`
+      : `<div class="spec-grid">
+           <div class="spec-box"><div class="spec-box-val">${o.thickness||'?'}</div><div class="spec-box-lbl">Dày (mm)</div></div>
+           <div class="spec-box"><div class="spec-box-val">${o.width||'?'}</div><div class="spec-box-lbl">Rộng (mm)</div></div>
+           <div class="spec-box"><div class="spec-box-val">${o.length||'?'}</div><div class="spec-box-lbl">Dài (mm)</div></div>
+           <div class="spec-box"><div class="spec-box-val" style="color:var(--brand)">${o.qty||0}</div><div class="spec-box-lbl">Số thanh</div></div>
+         </div>
+         <div class="spec-row">
+           <span class="spec-tag mat">${o.material||'—'}</span>
+           ${o.type?`<span class="spec-tag">${o.type}</span>`:''}
+           <span class="spec-tag kg">⚖️ ${o.kg||0} kg</span>
+         </div>`}
     ${o.deliveryDate?`<div class="card-due${overdue?' overdue':''}">📅 Hạn giao: ${fmtDate(o.deliveryDate)}</div>`:''}
     ${s==='done'&&o.doneAt?`<div class="card-due" style="color:var(--green-m)">✅ Hoàn thành: ${fmtDateTime(o.doneAt)}</div>`:''}
     ${s==='done'&&o.startedAt&&o.doneAt?`<div class="card-due" style="color:var(--text3)">⏱ Thời gian SX: <b style="color:var(--brand)">${fmtDuration(o.doneAt-o.startedAt)}</b></div>`:''}
@@ -2687,14 +2868,14 @@ function renderSettings(){
 // ════════════════════════════════════════════════════════════
 // ORDERS CRUD
 // ════════════════════════════════════════════════════════════
-function openAddOrder(){ _editOrderId=null; $('orderModalTitle').textContent='Thêm đơn hàng mới'; ['ofCust','ofPO','ofType','ofNote','ofAddr','ofKg'].forEach(id=>$(id).value=''); ['ofThk','ofW','ofQty'].forEach(id=>$(id).value=''); $('ofL').value='4000'; $('ofMat').value='B*'; $('ofPri').value='GẤP 1'; $('ofDate').value=''; $('orderErr').style.display='none'; openModal('orderModal'); }
+function openAddOrder(){ _editOrderId=null; $('orderModalTitle').textContent='Thêm đơn hàng mới'; ['ofCust','ofPO','ofType','ofNote','ofAddr','ofKg','ofPhi'].forEach(id=>$(id).value=''); ['ofThk','ofW','ofQty'].forEach(id=>$(id).value=''); $('ofL').value='4000'; $('ofMat').value='B*'; $('ofPri').value='GẤP 1'; $('ofDate').value=''; $('orderErr').style.display='none'; const lbl=$('kgAutoLabel'); if(lbl) lbl.textContent=''; openModal('orderModal'); }
 function editOrder(id){
   const o=DB.orders.find(x=>x.id===id); if(!o) return;
   _editOrderId=id;
   $('orderModalTitle').textContent='Sửa đơn hàng';
   $('ofCust').value=o.customer||''; $('ofPO').value=o.po||''; $('ofType').value=o.type||'';
   $('ofMat').value=o.material||'B*'; $('ofThk').value=o.thickness||''; $('ofW').value=o.width||'';
-  $('ofL').value=o.length||4000; $('ofQty').value=o.qty||''; $('ofKg').value=o.kg||'';
+  $('ofPhi').value=o.phi||''; $('ofL').value=o.length||4000; $('ofQty').value=o.qty||''; $('ofKg').value=o.kg||''; const lbl=$('kgAutoLabel'); if(lbl) lbl.textContent=o.phi?`✓ Thanh tròn Φ${o.phi}`:'';
   $('ofPri').value=o.priority||'GẤP 1'; $('ofDate').value=o.deliveryDate||'';
   $('ofAddr').value=o.address||''; $('ofNote').value=o.note||'';
   $('orderErr').style.display='none';
@@ -2792,28 +2973,70 @@ function renderProgressBar(o){
   </div>`;
 }
 
+// Tự tính KG khi nhập Φ hoặc dày/rộng/dài/qty
+function calcKgAuto(){
+  const phi = parseFloat($('ofPhi').value)||0;
+  const l   = parseFloat($('ofL').value)||0;
+  const qty = parseInt($('ofQty').value)||0;
+  const t   = parseFloat($('ofThk').value)||0;
+  const w   = parseFloat($('ofW').value)||0;
+  const lbl = $('kgAutoLabel');
+
+  if(phi && l && qty){
+    // Thanh tròn: KG = Φ² × L × 7 / 1,000,000 × qty
+    const kg = parseFloat((phi*phi*l*7/1000000*qty).toFixed(3));
+    $('ofKg').value = kg;
+    if(lbl) lbl.textContent = `✓ Tự tính thanh tròn Φ${phi}`;
+  } else if(t && w && l && qty){
+    // Thanh dẹt: KG = (t/10)×(w/10)×(l/10)×qty×8.5/1000
+    const kg = parseFloat(((t/10)*(w/10)*(l/10)*qty*8.5/1000).toFixed(3));
+    $('ofKg').value = kg;
+    if(lbl) lbl.textContent = '✓ Tự tính thanh dẹt';
+  } else {
+    if(lbl) lbl.textContent = '';
+  }
+}
+
 function saveOrder(){
   const customer=$('ofCust').value.trim();
   if(!customer){ $('orderErr').textContent='Nhập tên khách hàng'; $('orderErr').style.display='block'; return; }
-  const t=parseFloat($('ofThk').value)||0, w=parseFloat($('ofW').value)||0, l=parseFloat($('ofL').value)||4000, qty=parseInt($('ofQty').value)||0;
-  let kg=parseFloat($('ofKg').value)||0;
-  if(!kg&&t&&w&&l&&qty) kg=parseFloat(((t/10)*(w/10)*(l/10)*qty*8.5/1000).toFixed(2));
-  const data={customer,po:$('ofPO').value.trim(),type:$('ofType').value.trim(),material:$('ofMat').value,thickness:t,width:w,length:l,qty,kg,priority:$('ofPri').value,deliveryDate:$('ofDate').value,address:$('ofAddr').value.trim(),note:$('ofNote').value.trim()};
+  const phi = parseFloat($('ofPhi').value)||0;
+  const t   = parseFloat($('ofThk').value)||0;
+  const w   = parseFloat($('ofW').value)||0;
+  const l   = parseFloat($('ofL').value)||4000;
+  const qty = parseInt($('ofQty').value)||0;
+  let kg    = parseFloat($('ofKg').value)||0;
+  // Auto-calc nếu chưa có
+  if(!kg){
+    if(phi&&l&&qty) kg=parseFloat((phi*phi*l*7/1000000*qty).toFixed(3));
+    else if(t&&w&&l&&qty) kg=parseFloat(((t/10)*(w/10)*(l/10)*qty*8.5/1000).toFixed(3));
+  }
+  const isRound = phi > 0; // true = thanh tròn
+  const data={
+    customer, po:$('ofPO').value.trim(), type:$('ofType').value.trim(),
+    material:$('ofMat').value, thickness:t, width:w, length:l, qty, kg,
+    phi: isRound?phi:0, isRound,
+    priority:$('ofPri').value, deliveryDate:$('ofDate').value,
+    address:$('ofAddr').value.trim(), note:$('ofNote').value.trim()
+  };
 
   if(_editOrderId){
     const idx=DB.orders.findIndex(x=>x.id===_editOrderId);
     const before={...DB.orders[idx]};
     DB.orders[idx]={...DB.orders[idx],...data};
-    log('Sửa đơn',`${customer} · ${data.priority}`,_editOrderId,{status:before.status,customer:before.customer},{status:DB.orders[idx].status,customer});
+    log('Sửa đơn',`${customer} · ${data.priority}`,_editOrderId,
+      {status:before.status,customer:before.customer},
+      {status:DB.orders[idx].status,customer});
     showToast('✅ Đã cập nhật đơn hàng');
   } else {
     const newId=uid();
     DB.orders.push({id:newId,status:'pending',createdAt:Date.now(),createdBy:currentUser?.id,...data});
     _knownIds.add(newId);
-    log('Thêm đơn',`${customer} · ${qty} thanh · ${data.priority}`,newId,null,{customer,qty,priority:data.priority});
+    const specStr = isRound?`Φ${phi}×${l}mm · ${qty} cây`:`${t}×${w}×${l}mm · ${qty} thanh`;
+    log('Thêm đơn',`${customer} · ${specStr} · ${data.priority}`,newId,null,{customer,qty,priority:data.priority});
     showToast('✅ Đã thêm đơn hàng mới');
-    addNotif('order_new','📦 Đơn mới: '+customer,`${t}×${w}×${l}mm · ${qty} thanh · ${data.priority}`,'keHoach',currentUser?.name);
-    pushNotif('📦 Đơn hàng mới!',`${customer} · ${t}×${w}mm · ${qty} thanh`);
+    addNotif('order_new','📦 Đơn mới: '+customer,`${specStr} · ${data.priority}`,'keHoach',currentUser?.name);
+    pushNotif('📦 Đơn hàng mới!',`${customer} · ${specStr}`);
   }
   closeModal('orderModal');
   renderTab(currentTab);

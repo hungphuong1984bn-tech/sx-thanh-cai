@@ -2531,8 +2531,13 @@ function ddPriCard(o, rank){
 }
 
 function renderDorDang(){
-  const inp = document.getElementById('srchInp');
-  if(inp) searchQ = inp.value;
+  const inpOld = document.getElementById('srchInp');
+  let caretPos = null, hadFocus = false;
+  if(inpOld){
+    searchQ = inpOld.value;
+    hadFocus = document.activeElement===inpOld;
+    caretPos = inpOld.selectionStart;
+  }
   const getPri = o => parseInt((o.priority||'GẤP 9').replace('GẤP ',''))||9;
   let allActive = DB.orders.filter(o=>o.status!=='done');
   const total = allActive.length;
@@ -2580,7 +2585,14 @@ function renderDorDang(){
     </div>`}
   `;
   const ni=document.getElementById('srchInp');
-  if(ni){ const v=ni.value;ni.value='';ni.value=v; ni.addEventListener('input',function(){searchQ=this.value;renderDorDang();}); }
+  if(ni){
+    ni.addEventListener('input',function(){searchQ=this.value;renderDorDang();});
+    if(hadFocus){
+      ni.focus();
+      const pos = caretPos!==null ? Math.min(caretPos, ni.value.length) : ni.value.length;
+      try{ ni.setSelectionRange(pos, pos); }catch(e){}
+    }
+  }
 }
 
 function clearSearch(){
@@ -2799,7 +2811,7 @@ function renderBaoCao(){
 }
 
 // Nhật ký
-const ACT_ICO={'Đăng nhập':'🔑','Đăng xuất':'🚪','Thêm đơn':'🆕','Sửa đơn':'✏️','Xóa đơn':'🗑️','Đang chạy':'⚙️','Xong':'✅','Chờ SX':'⏳','Sửa TK':'👤','Thêm TK':'➕','Xóa TK':'🗑️','Đổi MK':'🔐','Đổi MK TK':'🔐'};
+const ACT_ICO={'Đăng nhập':'🔑','Đăng xuất':'🚪','Thêm đơn':'🆕','Sửa đơn':'✏️','Xóa đơn':'🗑️','Đang chạy':'⚙️','Xong':'✅','Chờ SX':'⏳','Sửa TK':'👤','Thêm TK':'➕','Xóa TK':'🗑️','Đổi MK':'🔐','Đổi MK TK':'🔐','Chấm công':'🗓️','Thêm người lao động':'➕','Sửa tên người lao động':'✏️','Xóa người lao động':'🗑️','Lưu chấm công':'💾','Tự chốt sổ chấm công':'📦'};
 // Format before/after thành dạng dễ đọc
 function fmtLogChange(obj){
   if(!obj) return '';
@@ -2812,6 +2824,7 @@ function fmtLogChange(obj){
     matCodes: v=>v&&v.length?`Mã NL: ${v.join(', ')}`:'',
     note: v=>v?`Ghi chú: ${v}`:'',
     role: v=>({admin:'👑 Admin',staff:'⚙️ Nhân viên',viewer:'👁 Xem'}[v]||v),
+    công: v=>`Công: ${v}`,
   };
   return Object.entries(obj)
     .filter(([k,v])=>v!==null&&v!==undefined&&v!=='')
@@ -2823,8 +2836,9 @@ let _logSearchQ = '';
 
 function renderNhatKy(){
   actLog.forEach(l=>l.read=true); logSave(); updateLogBadge();
-  const si=document.getElementById('logSearch');
-  if(si) _logSearchQ=si.value;
+  const siOld=document.getElementById('logSearch');
+  let caretPos=null, hadFocus=false;
+  if(siOld){ _logSearchQ=siOld.value; hadFocus=document.activeElement===siOld; caretPos=siOld.selectionStart; }
 
   let list=actLog.slice(0,300);
   if(_logSearchQ){
@@ -2867,7 +2881,14 @@ function renderNhatKy(){
     }
   `;
   const ni=document.getElementById('logSearch');
-  if(ni){ ni.addEventListener('input',()=>renderNhatKy()); }
+  if(ni){
+    ni.addEventListener('input',function(){_logSearchQ=this.value;renderNhatKy();});
+    if(hadFocus){
+      ni.focus();
+      const pos = caretPos!==null ? Math.min(caretPos, ni.value.length) : ni.value.length;
+      try{ ni.setSelectionRange(pos, pos); }catch(e){}
+    }
+  }
 }
 function clearLog(){ confirm2('Xoá nhật ký','Xoá toàn bộ nhật ký thao tác?',()=>{ actLog=[]; saveLog(); renderNhatKy(); showToast('Đã xoá nhật ký'); }); }
 
@@ -2960,13 +2981,18 @@ function addWorker(){
   const id = uid();
   DB.workers.push({id, name:''});
   saveWorkers();
+  log('Thêm người lao động', `Đã thêm 1 người lao động mới vào bảng chấm công (chưa đặt tên)`, '', null, {workerId:id});
   renderChamCong();
   setTimeout(()=>{ const el=document.getElementById('wkName_'+id); if(el){ el.focus(); } }, 30);
 }
 function renameWorker(id, name){
   const w = DB.workers.find(x=>x.id===id); if(!w) return;
-  w.name = name.trim();
+  const old = w.name;
+  name = name.trim();
+  if(old===name) return;
+  w.name = name;
   saveWorkers();
+  log('Sửa tên người lao động', `${old||'(chưa có tên)'} → ${name||'(chưa có tên)'}`, '', {name:old}, {name});
 }
 function deleteWorker(id){
   const w = DB.workers.find(x=>x.id===id); if(!w) return;
@@ -2974,6 +3000,7 @@ function deleteWorker(id){
     DB.workers = DB.workers.filter(x=>x.id!==id);
     Object.keys(DB.attendance).forEach(ym=>{ if(DB.attendance[ym]) delete DB.attendance[ym][id]; });
     saveWorkers(); saveAttendance();
+    log('Xóa người lao động', `${w.name||'(chưa có tên)'} · đã xóa toàn bộ dữ liệu công của người này`, '', {workerId:id,name:w.name}, null);
     renderChamCong();
     showToast('Đã xóa');
   });
@@ -2984,9 +3011,14 @@ function setCell(workerId, day, value){
   if(!DB.attendance[ym]) DB.attendance[ym] = {};
   if(!DB.attendance[ym][workerId]) DB.attendance[ym][workerId] = {};
   value = value.trim();
+  const old = DB.attendance[ym][workerId][day]!==undefined ? DB.attendance[ym][workerId][day] : '';
+  if(old===value) return;
   if(value==='') delete DB.attendance[ym][workerId][day];
   else DB.attendance[ym][workerId][day] = value;
   saveAttendance();
+  const wName = DB.workers.find(w=>w.id===workerId)?.name || '(chưa có tên)';
+  log('Chấm công', `${wName} · Ngày ${day}/${ym.split('-')[1]}/${ym.split('-')[0]}`, '',
+    {công: old||'—'}, {công: value||'—'});
   // Cập nhật tổng công của dòng này không cần render lại cả bảng (giữ focus)
   const totalEl = document.getElementById('wkTotal_'+workerId);
   if(totalEl) totalEl.textContent = computeTotal(workerId);
@@ -3045,6 +3077,7 @@ function saveAllAttendance(ymParam, silent){
   });
   saveAttendance();
   if(!silent) showToast('✅ Đã lưu toàn bộ bảng chấm công tháng '+ym.split('-')[1]+'/'+ym.split('-')[0]);
+  log(silent?'Tự chốt sổ chấm công':'Lưu chấm công', `Tháng ${ym.split('-')[1]}/${ym.split('-')[0]} · ${DB.workers.length} người lao động`, '');
 }
 
 function renderChamCong(){

@@ -3024,28 +3024,59 @@ function setCell(workerId, day, value){
   if(totalEl) totalEl.textContent = computeTotal(workerId);
 }
 
-// Chuyển 1 ô nhập công thành số công thực tế.
+// Chuyển 1 ô nhập công thành {cong, otHours}.
 // Quy ước nhập: "1" = 1 công (8 giờ) · "0.5" = nửa công · "0" = nghỉ.
-// Phần thập phân (sau dấu chấm) được hiểu là SỐ GIỜ LÀM THÊM trong ngày
-// đó, ví dụ "1.2" = 1 công + làm thêm 2 giờ.
+// Phần thập phân (sau dấu chấm, khi phần nguyên ≥1) được hiểu là SỐ GIỜ
+// LÀM THÊM trong ngày đó, ví dụ "1.2" = 1 công + làm thêm 2 giờ.
+// Nếu phần nguyên = 0 thì phần thập phân vẫn là phần lẻ công bình thường
+// (ví dụ "0.5" = nửa công, không phải 5 giờ).
 function parseCongValue(raw){
-  if(raw===undefined||raw===null) return 0;
+  if(raw===undefined||raw===null) return {cong:0, ot:0};
   const s = String(raw).trim().replace(',', '.');
-  if(s==='') return 0;
-  const n = parseFloat(s);
-  return isNaN(n) ? 0 : n;
+  if(s==='') return {cong:0, ot:0};
+  const m = s.match(/^(\d+)(?:\.(\d+))?$/);
+  if(!m){ const n=parseFloat(s); return {cong:isNaN(n)?0:n, ot:0}; } // fallback giá trị lạ
+  const intPart = parseInt(m[1], 10);
+  const decStr = m[2] || '';
+  if(decStr==='') return {cong:intPart, ot:0};
+  if(intPart===0) return {cong:parseFloat('0.'+decStr), ot:0}; // phần lẻ công (vd 0.5 = nửa công)
+  // Phần thập phân = số giờ làm thêm (1 chữ số thập phân ⇄ 1 chữ số giờ):
+  // "1.2" → 2 giờ · "1.25" → 2.5 giờ (hỗ trợ làm thêm nửa giờ)
+  const otHours = parseFloat('0.'+decStr) * 10;
+  return {cong:intPart, ot:otHours};
 }
 
-// Tổng công của cả tháng = CỘNG DỒN TRỰC TIẾP các ô đã nhập (giữ nguyên
-// quy ước số công.giờ làm thêm), ví dụ ngày 1 chấm 1.2 (1 công + thêm 2h),
-// ngày 2 chấm 1.2 (1 công + thêm 2h) ⇒ Tổng công = 2.4
-// (2 công + tổng cộng 4 giờ làm thêm trong tháng).
+// Tổng công của cả tháng: cộng dồn riêng số công và số giờ làm thêm của
+// từng ngày, sau đó GIỜ LÀM THÊM ĐỦ 8 GIỜ sẽ được quy đổi thành 1 công.
+// Ví dụ: ngày 1 chấm 1.2 (1 công + 2h thêm giờ), ngày 2 chấm 1.2 (1 công +
+// 2h thêm giờ) ⇒ tổng = 2 công + 4 giờ thêm giờ ⇒ hiển thị "2.4" (chưa đủ
+// 8h nên chưa quy đổi). Nếu giờ thêm giờ cộng dồn đủ/vượt 8h thì cứ mỗi 8h
+// được +1 công, phần dư còn lại vẫn hiển thị là số giờ thêm giờ.
 function computeTotal(workerId){
   const ym = curYM();
   const rowData = DB.attendance[ym]?.[workerId] || {};
-  let sum = 0;
-  Object.values(rowData).forEach(v=>{ sum += parseCongValue(v); });
-  return (Math.round(sum*10)/10).toString();
+  let cong = 0, ot = 0;
+  Object.values(rowData).forEach(v=>{
+    const p = parseCongValue(v);
+    cong += p.cong;
+    ot += p.ot;
+  });
+  // Quy đổi giờ làm thêm đủ 8h thành công, phần dư (<8h) giữ lại làm giờ thêm giờ
+  const extraCong = Math.floor(ot/8 + 1e-9);
+  let otRest = Math.round((ot - extraCong*8) * 10) / 10;
+  if(otRest >= 8) { otRest = 0; } // an toàn, tránh sai số float
+  cong += extraCong;
+  cong = Math.round(cong*10)/10;
+  if(otRest <= 0) return cong.toString();
+  // Có giờ thêm giờ dư: ghép "phần công.giờ dư" theo đúng quy ước nhập ban đầu
+  const congInt = Math.floor(cong + 1e-9);
+  const congFrac = Math.round((cong - congInt) * 10) / 10; // phần lẻ công (nửa công) nếu có
+  if(congFrac > 0){
+    // Trường hợp hiếm: vừa có nửa công lẻ vừa có giờ thêm giờ dư → ghi rõ riêng
+    return cong.toString() + ' +' + otRest + 'h';
+  }
+  const otDigit = otRest % 1 === 0 ? Math.round(otRest) : otRest;
+  return congInt + '.' + otDigit;
 }
 
 // Tự động theo dõi tháng hiện tại theo thời gian thực: khi hết tháng (sang

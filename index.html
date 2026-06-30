@@ -3024,11 +3024,32 @@ function setCell(workerId, day, value){
   if(totalEl) totalEl.textContent = computeTotal(workerId);
 }
 
+// Chuyển 1 ô nhập công thành số công thực tế (đơn vị: công, 1 công = 8 giờ).
+// Quy ước nhập: "1" = 1 công · "0.5" = nửa công · "0" = nghỉ.
+// Khi có làm thêm giờ, phần thập phân SAU số nguyên ≥1 được hiểu là SỐ GIỜ
+// làm thêm (không phải phần lẻ của công), ví dụ "1.2" = 1 công (8h) + 2 giờ
+// làm thêm = 1 + 2/8 = 1.25 công. "2.45" = 2 công + 4,5 giờ thêm giờ.
+// Nếu phần nguyên = 0 thì phần thập phân vẫn là phần lẻ công như bình thường
+// (ví dụ "0.5" = nửa công, không phải 5 giờ).
+function parseCongValue(raw){
+  if(raw===undefined||raw===null) return 0;
+  const s = String(raw).trim().replace(',', '.');
+  if(s==='') return 0;
+  const m = s.match(/^(\d+)(?:\.(\d+))?$/);
+  if(!m) { const n=parseFloat(s); return isNaN(n)?0:n; } // fallback cho giá trị lạ
+  const intPart = parseInt(m[1], 10);
+  const decStr = m[2] || '';
+  if(decStr==='') return intPart;
+  if(intPart===0) return parseFloat('0.'+decStr); // phần lẻ công (vd 0.5 = nửa công)
+  const otHours = parseInt(decStr, 10); // "2"→2 giờ, "45"→45 giờ (nếu lỡ gõ nhiều số)
+  return intPart + otHours/8;
+}
+
 function computeTotal(workerId){
   const ym = curYM();
   const rowData = DB.attendance[ym]?.[workerId] || {};
   let sum = 0;
-  Object.values(rowData).forEach(v=>{ const n=parseFloat(String(v).replace(',','.')); if(!isNaN(n)) sum += n; });
+  Object.values(rowData).forEach(v=>{ sum += parseCongValue(v); });
   return (Math.round(sum*100)/100).toString();
 }
 

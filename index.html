@@ -700,6 +700,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         Đã hoàn thành
       </button>
       <div class="sb-section">Báo cáo</div>
+      <button class="sb-item" id="sbi-chamCong" onclick="goTab('chamCong')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/><path d="M9 16l1.5 1.5L15 13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Chấm công &amp; Nhân sự
+      </button>
       <button class="sb-item" id="sbi-baoCao" onclick="goTab('baoCao')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         Báo cáo
@@ -767,6 +771,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       <button class="bn" id="bn-hoanThanh" onclick="goTab('hoanThanh')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         Hoàn thành
+      </button>
+      <button class="bn" id="bn-chamCong" onclick="goTab('chamCong')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/><path d="M9 16l1.5 1.5L15 13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Chấm công
       </button>
       <button class="bn" id="bn-baoCao" onclick="goTab('baoCao')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -1059,7 +1067,7 @@ const PRI_COLOR = {
 // ════════════════════════════════════════════════════════════
 let currentUser = null;
 let currentTab  = 'dashboard';
-let DB = { orders:[], users:[
+let DB = { orders:[], attendance:{}, workers:[], users:[
   {id:'u1',username:'admin',password:'admin123',role:'admin',name:'Quản trị viên',email:'admin@dongphuong.vn',phone:''},
   {id:'u2',username:'nhanvien',password:'nv123',role:'staff',name:'Nhân viên SX',email:'',phone:''}
 ]};
@@ -1105,13 +1113,15 @@ async function fbWrite(path, data, method='PUT'){
 // LOCAL STORAGE  – cache + fallback
 // ════════════════════════════════════════════════════════════
 function lsSave(){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify({orders:DB.orders,users:DB.users})); }catch(e){}
+  try{ localStorage.setItem(LS_KEY, JSON.stringify({orders:DB.orders,users:DB.users,attendance:DB.attendance,workers:DB.workers})); }catch(e){}
 }
 function lsLoad(){
   try{
     const d = JSON.parse(localStorage.getItem(LS_KEY)||'{}');
     if(d.orders) DB.orders = d.orders;
     if(d.users && d.users.length) DB.users = d.users;
+    if(d.attendance) DB.attendance = d.attendance;
+    if(d.workers) DB.workers = d.workers;
   }catch(e){}
 }
 function logLoad(){
@@ -1153,9 +1163,27 @@ function saveAll(){
   lsSave();
   if(!fbOk()) return;
   setSyncDot('saving');
-  fbWrite('/data', {orders:DB.orders, users:DB.users}, 'PUT')
+  fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers}, 'PUT')
     .then(()=>setSyncDot('ok'))
     .catch(e=>{ setSyncDot('error'); showToast('❌ Lỗi: '+e.message, true); });
+}
+
+function saveAttendance(){
+  lsSave();
+  if(!fbOk()) return;
+  setSyncDot('saving');
+  fbWrite('/data/attendance', DB.attendance, 'PUT')
+    .then(()=>setSyncDot('ok'))
+    .catch(e=>{ setSyncDot('error'); showToast('❌ Lỗi sync: '+e.message, true); });
+}
+
+function saveWorkers(){
+  lsSave();
+  if(!fbOk()) return;
+  setSyncDot('saving');
+  fbWrite('/data/workers', DB.workers, 'PUT')
+    .then(()=>setSyncDot('ok'))
+    .catch(e=>{ setSyncDot('error'); showToast('❌ Lỗi sync: '+e.message, true); });
 }
 
 function saveLog(){
@@ -1364,12 +1392,14 @@ async function initAndStartSync(){
           // Giữ lại user cache nếu Firebase chưa có
           DB.users = Array.isArray(data.users)?data.users:Object.values(data.users);
         }
+        if(data.attendance){ DB.attendance = data.attendance; }
+        if(data.workers){ DB.workers = data.workers; }
         lsSave();
         _lastHash = hashOrders(DB.orders);
         DB.orders.forEach(o=>_knownIds.add(o.id));
       } else {
         // Lần đầu: đẩy data lên
-        await fbWrite('/data', {orders:DB.orders, users:DB.users}, 'PUT');
+        await fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers}, 'PUT');
       }
       // Load log
       const log = await fbRead('/log');
@@ -1426,6 +1456,12 @@ async function doPoll(){
         DB.users = freshUsers; changed = true;
       }
     }
+    if(data.attendance && JSON.stringify(data.attendance)!==JSON.stringify(DB.attendance)){
+      DB.attendance = data.attendance; changed = true;
+    }
+    if(data.workers && JSON.stringify(data.workers)!==JSON.stringify(DB.workers)){
+      DB.workers = data.workers; changed = true;
+    }
     const freshLog = await fbRead('/log');
     if(Array.isArray(freshLog) && freshLog.length > actLog.length){
       actLog = freshLog; logSave(); updateLogBadge();
@@ -1469,6 +1505,16 @@ function startPolling(){
           DB.users = freshUsers;
           changed = true;
         }
+      }
+
+      if(data.attendance && JSON.stringify(data.attendance)!==JSON.stringify(DB.attendance)){
+        DB.attendance = data.attendance;
+        changed = true;
+      }
+
+      if(data.workers && JSON.stringify(data.workers)!==JSON.stringify(DB.workers)){
+        DB.workers = data.workers;
+        changed = true;
       }
 
       // Check log
@@ -1892,7 +1938,7 @@ function goTab(tab){
   document.querySelectorAll('.bn').forEach(x=>x.classList.remove('active'));
   const bn=$('bn-'+tab); if(bn) bn.classList.add('active');
   // Title
-  const titles={dashboard:'Dashboard',dorDang:'Đơn dở dang',keHoach:'Kế hoạch SX',hoanThanh:'Hoàn thành',baoCao:'Báo cáo',nhatKy:'Nhật ký thao tác',settings:'Cài đặt'};
+  const titles={dashboard:'Dashboard',dorDang:'Đơn dở dang',keHoach:'Kế hoạch SX',hoanThanh:'Hoàn thành',baoCao:'Báo cáo',chamCong:'Chấm công & Nhân sự',nhatKy:'Nhật ký thao tác',settings:'Cài đặt'};
   $('pageTitle').textContent=titles[tab]||tab;
   // FAB: admin mới thấy nút thêm đơn
   // FAB: admin thấy nút + ở tất cả các tab
@@ -1924,7 +1970,7 @@ function updateBadges(){
 // RENDER
 // ════════════════════════════════════════════════════════════
 function renderTab(tab){
-  const fns={dashboard:renderDashboard,dorDang:renderDorDang,keHoach:renderKeHoach,hoanThanh:renderHoanThanh,baoCao:renderBaoCao,nhatKy:renderNhatKy,settings:renderSettings};
+  const fns={dashboard:renderDashboard,dorDang:renderDorDang,keHoach:renderKeHoach,hoanThanh:renderHoanThanh,baoCao:renderBaoCao,chamCong:renderChamCong,nhatKy:renderNhatKy,settings:renderSettings};
   if(fns[tab]) fns[tab]();
 }
 
@@ -2500,8 +2546,7 @@ function renderDorDang(){
           <div class="dd-col-hd-info"><div class="dd-col-hd-title">Đơn mới cập nhật</div><div class="dd-col-hd-sub">Thứ tự theo thời gian nhập</div></div>
           <span class="dd-col-hd-badge" style="background:var(--brand);color:#fff">${newList.length}</span>
         </div>
-        <div>${newList.length?newList.slice(0,10).map(o=>ddNewCard(o)).join(''):'<div class="dd-empty-col">Không có đơn nào</div>'}
-        ${newList.length>10?`<div style="padding:8px 14px;text-align:center"><button onclick="goTab('keHoach')" style="font-size:12px;color:var(--brand);border:1px solid #bfdbfe;background:#eff6ff;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${newList.length} →</button></div>`:''}</div>
+        <div>${newList.length?newList.map(o=>ddNewCard(o)).join(''):'<div class="dd-empty-col">Không có đơn nào</div>'}</div>
       </div>
       <div class="dd-col">
         <div class="dd-col-hd" style="background:linear-gradient(135deg,#fff7ed,#fef3c7)">
@@ -2509,8 +2554,7 @@ function renderDorDang(){
           <div class="dd-col-hd-info"><div class="dd-col-hd-title">Thứ tự ưu tiên AI</div><div class="dd-col-hd-sub">Nguy cấp nhất · Ưu tiên cao nhất</div></div>
           <span class="dd-col-hd-badge" style="background:#f59e0b;color:#fff">${priList.length}</span>
         </div>
-        <div>${priList.length?priList.slice(0,10).map((o,i)=>ddPriCard(o,i+1)).join(''):'<div class="dd-empty-col">Không có đơn nào</div>'}
-        ${priList.length>10?`<div style="padding:8px 14px;text-align:center"><button onclick="goTab('keHoach')" style="font-size:12px;color:#b45309;border:1px solid #fde68a;background:#fffbeb;border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit;font-weight:600">Xem tất cả ${priList.length} →</button></div>`:''}</div>
+        <div>${priList.length?priList.map((o,i)=>ddPriCard(o,i+1)).join(''):'<div class="dd-empty-col">Không có đơn nào</div>'}</div>
       </div>
     </div>`}
   `;
@@ -2866,6 +2910,236 @@ function renderSettings(){
 }
 
 // ════════════════════════════════════════════════════════════
+// CHẤM CÔNG & NHÂN SỰ
+// Bảng chấm công tay theo ngày (giống bảng giấy/Excel) — không
+// gắn với tài khoản đăng nhập. Tích/ghi điểm công thủ công,
+// quản lý danh sách người lao động tự do, xuất Excel & in A4.
+// ════════════════════════════════════════════════════════════
+let _attYM = null; // 'YYYY-MM' tháng đang xem
+
+function todayStr(d){
+  d = d || new Date();
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function curYM(){ return (_attYM = _attYM || todayStr().slice(0,7)); }
+function daysInMonth(ym){ const [y,m]=ym.split('-').map(Number); return new Date(y,m,0).getDate(); }
+function weekdayVN(y,m,day){ const w=new Date(y,m-1,day).getDay(); return ['CN','2','3','4','5','6','7'][w]; }
+
+function changeAttMonth(ym){ _attYM = ym; renderChamCong(); }
+function shiftAttMonth(delta){
+  const [y,m] = curYM().split('-').map(Number);
+  const d = new Date(y, m-1+delta, 1);
+  _attYM = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  renderChamCong();
+}
+
+function addWorker(){
+  const id = uid();
+  DB.workers.push({id, name:''});
+  saveWorkers();
+  renderChamCong();
+  setTimeout(()=>{ const el=document.getElementById('wkName_'+id); if(el){ el.focus(); } }, 30);
+}
+function renameWorker(id, name){
+  const w = DB.workers.find(x=>x.id===id); if(!w) return;
+  w.name = name.trim();
+  saveWorkers();
+}
+function deleteWorker(id){
+  const w = DB.workers.find(x=>x.id===id); if(!w) return;
+  confirm2('Xóa người lao động', `Xóa "${w.name||'(chưa có tên)'}" khỏi bảng chấm công? (Dữ liệu công đã chấm của người này cũng sẽ bị xóa)`, ()=>{
+    DB.workers = DB.workers.filter(x=>x.id!==id);
+    Object.keys(DB.attendance).forEach(ym=>{ if(DB.attendance[ym]) delete DB.attendance[ym][id]; });
+    saveWorkers(); saveAttendance();
+    renderChamCong();
+    showToast('Đã xóa');
+  });
+}
+
+function setCell(workerId, day, value){
+  const ym = curYM();
+  if(!DB.attendance[ym]) DB.attendance[ym] = {};
+  if(!DB.attendance[ym][workerId]) DB.attendance[ym][workerId] = {};
+  value = value.trim();
+  if(value==='') delete DB.attendance[ym][workerId][day];
+  else DB.attendance[ym][workerId][day] = value;
+  saveAttendance();
+  // Cập nhật tổng công của dòng này không cần render lại cả bảng (giữ focus)
+  const totalEl = document.getElementById('wkTotal_'+workerId);
+  if(totalEl) totalEl.textContent = computeTotal(workerId);
+}
+
+function computeTotal(workerId){
+  const ym = curYM();
+  const rowData = DB.attendance[ym]?.[workerId] || {};
+  let sum = 0;
+  Object.values(rowData).forEach(v=>{ const n=parseFloat(String(v).replace(',','.')); if(!isNaN(n)) sum += n; });
+  return (Math.round(sum*100)/100).toString();
+}
+
+function renderChamCong(){
+  const ym = curYM();
+  const [y,m] = ym.split('-').map(Number);
+  const nDays = daysInMonth(ym);
+  const admin = isAdmin();
+  const monthData = DB.attendance[ym] || {};
+
+  const dayCols = Array.from({length:nDays}, (_,i)=>i+1);
+
+  $('mc').innerHTML = `
+    <div class="card" style="padding:14px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button class="chip" onclick="shiftAttMonth(-1)">←</button>
+        <input type="month" class="field-inp" style="width:auto;flex:1;min-width:130px" value="${ym}" onchange="changeAttMonth(this.value)">
+        <button class="chip" onclick="shiftAttMonth(1)">→</button>
+        <button class="chip" onclick="changeAttMonth(todayStr().slice(0,7))">Tháng này</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="set-btn" style="width:auto;padding:8px 14px;font-size:12.5px" onclick="printAttendance()">🖨️ In bảng (A4)</button>
+        <button class="set-btn" style="width:auto;padding:8px 14px;font-size:12.5px" onclick="exportAttendanceExcel()">⬇️ Xuất Excel (.csv)</button>
+        ${admin?`<button class="set-btn" style="width:auto;padding:8px 14px;font-size:12.5px" onclick="addWorker()">➕ Thêm người lao động</button>`:''}
+      </div>
+    </div>
+
+    <div class="card" style="padding:8px;overflow-x:auto">
+      <table id="attTable" style="border-collapse:collapse;font-size:11.5px;white-space:nowrap">
+        <thead>
+          <tr>
+            <th style="position:sticky;left:0;background:var(--card);border:1px solid var(--border);padding:5px 6px;min-width:24px">STT</th>
+            <th style="position:sticky;left:24px;background:var(--card);border:1px solid var(--border);padding:5px 8px;min-width:140px;text-align:left">Họ và tên</th>
+            ${dayCols.map(day=>`<th style="border:1px solid var(--border);padding:3px 2px;min-width:30px;text-align:center">
+              <div>${day}</div>
+              <div style="font-weight:400;color:${weekdayVN(y,m,day)==='CN'?'var(--red-m)':'var(--text4)'};font-size:9.5px">${weekdayVN(y,m,day)}</div>
+            </th>`).join('')}
+            <th style="border:1px solid var(--border);padding:5px 6px;min-width:50px;background:var(--green-l);color:var(--green)">Tổng công</th>
+            ${admin?'<th style="border:1px solid var(--border);padding:5px 6px;min-width:30px"></th>':''}
+          </tr>
+        </thead>
+        <tbody>
+          ${DB.workers.map((w,i)=>{
+            const rowData = monthData[w.id] || {};
+            return `<tr>
+              <td style="position:sticky;left:0;background:var(--card);border:1px solid var(--border);padding:5px 6px;text-align:center">${i+1}</td>
+              <td style="position:sticky;left:24px;background:var(--card);border:1px solid var(--border);padding:2px 4px">
+                <input id="wkName_${w.id}" value="${w.name||''}" placeholder="Tên người lao động" ${admin?'':'readonly'} onchange="renameWorker('${w.id}', this.value)" style="width:130px;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px 2px;outline:none;color:var(--text)">
+              </td>
+              ${dayCols.map(day=>{
+                const v = rowData[day]!==undefined ? rowData[day] : '';
+                return `<td style="border:1px solid var(--border);padding:0">
+                  <input value="${v}" inputmode="decimal" onchange="setCell('${w.id}', ${day}, this.value)" style="width:30px;height:30px;border:none;background:transparent;text-align:center;font-size:11.5px;font-family:inherit;outline:none;color:var(--text)">
+                </td>`;
+              }).join('')}
+              <td id="wkTotal_${w.id}" style="border:1px solid var(--border);padding:5px 6px;text-align:center;font-weight:700;background:var(--green-l);color:var(--green)">${computeTotal(w.id)}</td>
+              ${admin?`<td style="border:1px solid var(--border);padding:2px;text-align:center"><button class="icon-btn del" onclick="deleteWorker('${w.id}')" style="font-size:12px">🗑</button></td>`:''}
+            </tr>`;
+          }).join('')}
+          ${DB.workers.length===0?`<tr><td colspan="${3+nDays}" style="padding:16px;text-align:center;color:var(--text4);border:1px solid var(--border)">Chưa có người lao động nào${admin?' · bấm "➕ Thêm người lao động" để bắt đầu':''}</td></tr>`:''}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="padding:12px 14px;margin-top:10px;font-size:12px;color:var(--text3);line-height:1.6">
+      <b>Ghi chú cách chấm:</b> Đủ ngày công = <b>1</b> · Nửa ngày công = <b>0.5</b> · Không công = <b>0</b> · Làm thêm giờ thì cộng vào công ngày, ví dụ làm thêm 2 tiếng thì ghi <b>1.2</b> (1 là công 8h, 0.2 là 2h thêm giờ).
+    </div>
+  `;
+}
+
+function csvDownload(filename, rows){
+  const esc = v => {
+    v = (v===undefined||v===null) ? '' : String(v);
+    if(/[",\n;]/.test(v)) v = '"'+v.replace(/"/g,'""')+'"';
+    return v;
+  };
+  const content = '\uFEFF' + rows.map(r=>r.map(esc).join(',')).join('\r\n');
+  const blob = new Blob([content], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportAttendanceExcel(){
+  const ym = curYM();
+  const [y,m] = ym.split('-').map(Number);
+  const nDays = daysInMonth(ym);
+  const monthData = DB.attendance[ym] || {};
+  const rows = [];
+  rows.push([`BẢNG CHẤM CÔNG THÁNG ${m}/${y}`]);
+  rows.push([]);
+  rows.push(['STT','Họ và tên', ...Array.from({length:nDays},(_,i)=>String(i+1)), 'Tổng công']);
+  rows.push(['','Ngày trong tháng', ...Array.from({length:nDays},(_,i)=>weekdayVN(y,m,i+1)), '']);
+  DB.workers.forEach((w,i)=>{
+    const rowData = monthData[w.id] || {};
+    const row = [i+1, w.name||''];
+    for(let d=1; d<=nDays; d++) row.push(rowData[d]!==undefined?rowData[d]:'');
+    row.push(computeTotal(w.id));
+    rows.push(row);
+  });
+  rows.push([]);
+  rows.push(['Ghi chú: Đủ ngày công = 1, Nửa ngày công = 0.5, Không công = 0. Làm thêm giờ cộng vào công ngày (VD thêm 2h = 1.2).']);
+  csvDownload(`Bang_cham_cong_${ym}.csv`, rows);
+  showToast('✅ Đã xuất file chấm công tháng '+m+'/'+y);
+}
+
+function printAttendance(){
+  const ym = curYM();
+  const [y,m] = ym.split('-').map(Number);
+  const nDays = daysInMonth(ym);
+  const monthData = DB.attendance[ym] || {};
+  const dayCols = Array.from({length:nDays}, (_,i)=>i+1);
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Bảng chấm công ${m}/${y}</title>
+  <style>
+    @page{ size:A4 landscape; margin:8mm; }
+    body{ font-family:Arial,Helvetica,sans-serif; color:#000; }
+    h1{ text-align:center; font-size:16px; margin:0 0 4px; text-transform:uppercase }
+    .sub{ text-align:center; font-size:12px; margin-bottom:10px }
+    table{ border-collapse:collapse; width:100%; font-size:9.5px; table-layout:fixed }
+    th,td{ border:1px solid #000; padding:2px 3px; text-align:center; overflow:hidden }
+    th{ background:#f0f0f0; font-weight:bold }
+    td.name{ text-align:left; white-space:nowrap }
+    .wd{ font-size:8px; color:#444; display:block }
+    .sun{ color:#c00 }
+    .total{ font-weight:bold; background:#f7f7f7 }
+    .legend{ margin-top:10px; font-size:10px; line-height:1.5 }
+    .stt{ width:24px }
+    .name{ width:120px }
+  </style></head><body>
+    <h1>Bảng chấm công tháng ${m} năm ${y}</h1>
+    <table>
+      <thead><tr>
+        <th class="stt">STT</th><th class="name">Họ và tên</th>
+        ${dayCols.map(d=>`<th>${d}<span class="wd ${weekdayVN(y,m,d)==='CN'?'sun':''}">${weekdayVN(y,m,d)}</span></th>`).join('')}
+        <th>Tổng công</th>
+      </tr></thead>
+      <tbody>
+        ${DB.workers.map((w,i)=>{
+          const rowData = monthData[w.id]||{};
+          return `<tr>
+            <td>${i+1}</td>
+            <td class="name">${(w.name||'').replace(/</g,'&lt;')}</td>
+            ${dayCols.map(d=>`<td>${rowData[d]!==undefined?rowData[d]:''}</td>`).join('')}
+            <td class="total">${computeTotal(w.id)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <div class="legend">
+      <b>Ghi chú:</b> Đủ ngày công = 1 &nbsp;·&nbsp; Nửa ngày công = 0.5 &nbsp;·&nbsp; Không công = 0.<br>
+      Làm thêm giờ thì cộng vào công ngày, ví dụ làm thêm 2 tiếng thì ghi 1.2 (1 là công 1 ngày 8 tiếng, 0.2 là làm thêm 2 tiếng).
+    </div>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  if(!w){ showToast('❌ Trình duyệt chặn cửa sổ in, vui lòng cho phép popup', true); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+  w.onload = ()=>{ w.focus(); w.print(); };
+}
+
+
+// ════════════════════════════════════════════════════════════
 // ORDERS CRUD
 // ════════════════════════════════════════════════════════════
 function openAddOrder(){ _editOrderId=null; $('orderModalTitle').textContent='Thêm đơn hàng mới'; ['ofCust','ofPO','ofType','ofNote','ofAddr','ofKg','ofPhi'].forEach(id=>$(id).value=''); ['ofThk','ofW','ofQty'].forEach(id=>$(id).value=''); $('ofL').value='4000'; $('ofMat').value='B*'; $('ofPri').value='GẤP 1'; $('ofDate').value=''; $('orderErr').style.display='none'; const lbl=$('kgAutoLabel'); if(lbl) lbl.textContent=''; openModal('orderModal'); }
@@ -3186,7 +3460,7 @@ function saveUser(){
     log('Thêm TK',`${name} · @${username} · ${role}`,'',null,{username,role});
     showToast('✅ Đã thêm tài khoản');
   }
-  closeModal('userModal'); renderSettings(); saveAll();
+  closeModal('userModal'); renderTab(currentTab); saveAll();
 }
 function deleteUser(id){
   const u=DB.users.find(x=>x.id===id); if(!u) return;
@@ -3194,7 +3468,7 @@ function deleteUser(id){
   confirm2('Xóa tài khoản',`Xóa tài khoản "${u.name}" (@${u.username})?`,()=>{
     log('Xóa TK',`${u.name} · @${u.username}`,'',{username:u.username,role:u.role},null);
     DB.users=DB.users.filter(x=>x.id!==id);
-    renderSettings(); showToast('Đã xóa tài khoản'); saveAll();
+    renderTab(currentTab); showToast('Đã xóa tài khoản'); saveAll();
   });
 }
 function saveProfile(){

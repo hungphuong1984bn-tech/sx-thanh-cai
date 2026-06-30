@@ -3000,28 +3000,35 @@ function computeTotal(workerId){
   return (Math.round(sum*100)/100).toString();
 }
 
-// Tự động theo dõi tháng hiện tại theo thời gian thực: khi sang tháng mới
-// (kể cả lúc đang mở app qua đêm) bảng sẽ tự nhảy sang tháng tiếp theo.
+// Tự động theo dõi tháng hiện tại theo thời gian thực: khi hết tháng (sang
+// tháng mới, kể cả lúc đang mở app qua đêm) hệ thống sẽ:
+//  1) Tự lưu/chốt lại toàn bộ bảng công của tháng vừa kết thúc.
+//  2) Tự chuyển sang tháng mới với bảng công TRỐNG (chưa có ai chấm công)
+//     để chấm lại từ đầu, không bị dính dữ liệu của tháng cũ.
 let _attAutoFollow = true;
 function maintainAttMonth(){
   const realYM = todayStr().slice(0,7);
   if(_attAutoFollow && _attYM!==realYM){
+    const oldYM = _attYM;
+    // Chốt sổ tháng cũ trước khi chuyển sang tháng mới
+    if(oldYM && currentTab==='chamCong') saveAllAttendance(oldYM, true);
+    else if(oldYM) saveAttendance();
+    // Tháng mới luôn bắt đầu trống — chỉ tạo nếu chưa có để không đè dữ liệu
+    // đã được chấm trước cho tháng đó (nếu có)
+    if(!DB.attendance[realYM]) DB.attendance[realYM] = {};
     _attYM = realYM;
     if(currentTab==='chamCong') renderChamCong();
   }
 }
 setInterval(maintainAttMonth, 30000);
 
-// Lưu rõ ràng cả dòng công của 1 người lao động (đọc lại toàn bộ các ô
-// trong dòng từ DOM rồi ghi vào DB + đồng bộ Firebase), tránh trường hợp
-// chỉ dựa vào sự kiện onchange (mất focus) dẫn tới sót dữ liệu chưa kịp
-// lưu/đồng bộ khi mạng chập chờn.
 // Lưu TOÀN BỘ bảng chấm công cùng lúc bằng 1 nút duy nhất: đọc lại mọi ô
 // đang hiển thị trên màn hình rồi ghi vào DB + đồng bộ Firebase 1 lần,
 // tránh phải bấm lưu riêng cho từng người và tránh sót dữ liệu khi mất
 // focus ô nhập (onchange) lúc mạng chập chờn.
-function saveAllAttendance(){
-  const ym = curYM();
+// silent=true: dùng khi hệ thống tự lưu lúc chuyển tháng, không hiện toast.
+function saveAllAttendance(ymParam, silent){
+  const ym = ymParam || curYM();
   if(!DB.attendance[ym]) DB.attendance[ym] = {};
   const nDays = daysInMonth(ym);
   DB.workers.forEach(w=>{
@@ -3037,7 +3044,7 @@ function saveAllAttendance(){
     if(totalEl) totalEl.textContent = computeTotal(w.id);
   });
   saveAttendance();
-  showToast('✅ Đã lưu toàn bộ bảng chấm công tháng '+ym.split('-')[1]+'/'+ym.split('-')[0]);
+  if(!silent) showToast('✅ Đã lưu toàn bộ bảng chấm công tháng '+ym.split('-')[1]+'/'+ym.split('-')[0]);
 }
 
 function renderChamCong(){

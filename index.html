@@ -3041,8 +3041,11 @@ function parseCongValue(raw){
   const decStr = m[2] || '';
   if(decStr==='') return intPart;
   if(intPart===0) return parseFloat('0.'+decStr); // phần lẻ công (vd 0.5 = nửa công)
-  const otHours = parseInt(decStr, 10); // "2"→2 giờ, "45"→45 giờ (nếu lỡ gõ nhiều số)
-  return intPart + otHours/8;
+  // Phần thập phân = số giờ làm thêm chia cho 10 (vì 1 chữ số thập phân ⇄ 1 chữ số giờ):
+  // "1.2" → 0.2×10 = 2 giờ · "1.20" → 0.20×10 = 2 giờ (không bị hiểu nhầm thành 20 giờ)
+  // "1.25" → 0.25×10 = 2.5 giờ (hỗ trợ làm thêm nửa giờ)
+  const otHours = parseFloat('0.'+decStr) * 10;
+  return Math.round((intPart + otHours/8) * 1000) / 1000;
 }
 
 function computeTotal(workerId){

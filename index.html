@@ -138,7 +138,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .ns-panel{display:none;padding:10px 0}
 .ns-panel.active{display:block}
 .ns-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:12px}
-.ns-stat{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center}
+.ns-stat{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center;transition:transform .12s ease,border-color .12s ease,background .12s ease}
+.ns-stat[onclick]{cursor:pointer}
+.ns-stat[onclick]:hover{border-color:var(--brand);background:var(--brand-l,var(--bg))}
+.ns-stat[onclick]:active{transform:scale(.96)}
 .ns-stat-val{font-size:22px;font-weight:800;color:var(--brand)}
 .ns-stat-lbl{font-size:11px;color:var(--text3);margin-top:2px}
 .ns-table{border-collapse:collapse;width:100%;font-size:12px}
@@ -3179,6 +3182,8 @@ function goNsTab(t){
   _nsTab = t;
   document.querySelectorAll('.ns-tab').forEach(el=>el.classList.toggle('active', el.dataset.tab===t));
   document.querySelectorAll('.ns-panel').forEach(el=>el.classList.toggle('active', el.dataset.tab===t));
+  const bar = document.getElementById('nsTabBar');
+  if(bar) bar.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function renderChamCong(){
@@ -3203,10 +3208,10 @@ function renderChamCong(){
     <div class="card" style="padding:12px 14px;margin-bottom:0">
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tổng quan tháng ${m}/${y}</div>
       <div class="ns-stat-grid">
-        <div class="ns-stat"><div class="ns-stat-val">${workers.length}</div><div class="ns-stat-lbl">Người lao động</div></div>
-        <div class="ns-stat"><div class="ns-stat-val" style="color:var(--green)">${totalCong.toFixed(1)}</div><div class="ns-stat-lbl">Tổng công tháng</div></div>
-        <div class="ns-stat"><div class="ns-stat-val" style="color:var(--amber)">${nghiPhepCount}</div><div class="ns-stat-lbl">Đơn nghỉ phép</div></div>
-        <div class="ns-stat"><div class="ns-stat-val" style="color:var(--red-m)">${klCount}</div><div class="ns-stat-lbl">Vi phạm KL</div></div>
+        <div class="ns-stat" onclick="goNsTab('danhsach')" title="Xem danh sách nhân viên"><div class="ns-stat-val">${workers.length}</div><div class="ns-stat-lbl">Người lao động</div></div>
+        <div class="ns-stat" onclick="goNsTab('chamcong')" title="Xem bảng chấm công"><div class="ns-stat-val" style="color:var(--green)">${totalCong.toFixed(1)}</div><div class="ns-stat-lbl">Tổng công tháng</div></div>
+        <div class="ns-stat" onclick="goNsTab('nghiphep')" title="Xem đơn nghỉ phép"><div class="ns-stat-val" style="color:var(--amber)">${nghiPhepCount}</div><div class="ns-stat-lbl">Đơn nghỉ phép</div></div>
+        <div class="ns-stat" onclick="goNsTab('kyluat')" title="Xem hồ sơ kỷ luật"><div class="ns-stat-val" style="color:var(--red-m)">${klCount}</div><div class="ns-stat-lbl">Vi phạm KL</div></div>
       </div>
     </div>
 
@@ -3781,7 +3786,6 @@ function renderLichLamViec(){
             <th style="border:1px solid var(--border);padding:6px;min-width:150px;text-align:left">Họ và tên</th>
             <th style="border:1px solid var(--border);padding:6px;min-width:80px">Giới tính</th>
             <th style="border:1px solid var(--border);padding:6px;min-width:150px">Thời gian</th>
-            <th style="border:1px solid var(--border);padding:6px;min-width:100px">Xin nghỉ</th>
             <th style="border:1px solid var(--border);padding:6px;min-width:120px">Ghi chú</th>
             ${admin?'<th style="border:1px solid var(--border);padding:6px;min-width:30px"></th>':''}
           </tr>
@@ -3799,19 +3803,16 @@ function renderLichLamViec(){
               <input value="${(r.time||'').replace(/"/g,'&quot;')}" placeholder="Ca 1 : 6h – 17h" ${admin?'':'readonly'} onchange="llvSetCell('${sheet.id}',${i},'time',this.value)" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px;outline:none;color:var(--text)">
             </td>
             <td style="border:1px solid var(--border);padding:2px">
-              <input value="${(r.leave||'').replace(/"/g,'&quot;')}" placeholder="" ${admin?'':'readonly'} onchange="llvSetCell('${sheet.id}',${i},'leave',this.value)" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px;outline:none;color:var(--amber-m);text-align:center">
-            </td>
-            <td style="border:1px solid var(--border);padding:2px">
               <input value="${(r.note||'').replace(/"/g,'&quot;')}" placeholder="" ${admin?'':'readonly'} onchange="llvSetCell('${sheet.id}',${i},'note',this.value)" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px;outline:none;color:var(--text3)">
             </td>
             ${admin?`<td style="border:1px solid var(--border);padding:2px;text-align:center"><button class="icon-btn del" onclick="llvDeleteRow('${sheet.id}',${i})" style="font-size:12px">🗑</button></td>`:''}
           </tr>`).join('')}
-          ${sheet.rows.length===0?`<tr><td colspan="${admin?7:6}" style="padding:16px;text-align:center;color:var(--text4);border:1px solid var(--border)">Chưa có nhân viên nào trong lịch${admin?' · bấm "➕ Thêm nhân viên" để bắt đầu':''}</td></tr>`:''}
+          ${sheet.rows.length===0?`<tr><td colspan="${admin?6:5}" style="padding:16px;text-align:center;color:var(--text4);border:1px solid var(--border)">Chưa có nhân viên nào trong lịch${admin?' · bấm "➕ Thêm nhân viên" để bắt đầu':''}</td></tr>`:''}
         </tbody>
       </table>
     </div>
     <div class="card" style="padding:12px 14px;margin-top:8px;font-size:12px;color:var(--text3)">
-      <b>Tổng số nhân viên:</b> ${sheet.rows.length} &nbsp;·&nbsp; <b>Số người xin nghỉ:</b> ${sheet.rows.filter(r=>(r.leave||'').trim()).length}
+      <b>Tổng số nhân viên:</b> ${sheet.rows.length}
     </div>
     `:`<div class="card" style="padding:24px;text-align:center;color:var(--text4)">Chưa có lịch làm việc nào${admin?' · bấm "➕ Thêm bộ phận" để tạo lịch đầu tiên':''}</div>`}
   `;
@@ -3883,10 +3884,10 @@ function llvExportExcel(sheetId){
   if(s.period) rows.push([`Ngày/tháng: ${s.period}`]);
   if(s.warning) rows.push([s.warning]);
   rows.push([]);
-  rows.push(['STT','HỌ VÀ TÊN','GIỚI TÍNH','THỜI GIAN','XIN NGHỈ','GHI CHÚ']);
-  s.rows.forEach((r,i)=>rows.push([i+1, r.name||'', r.gender||'', r.time||'', r.leave||'', r.note||'']));
+  rows.push(['STT','HỌ VÀ TÊN','GIỚI TÍNH','THỜI GIAN','GHI CHÚ']);
+  s.rows.forEach((r,i)=>rows.push([i+1, r.name||'', r.gender||'', r.time||'', r.note||'']));
   rows.push([]);
-  rows.push(['TỔNG SỐ NHÂN VIÊN', s.rows.length, '', 'SỐ NGƯỜI XIN NGHỈ', s.rows.filter(r=>(r.leave||'').trim()).length]);
+  rows.push(['TỔNG SỐ NHÂN VIÊN', s.rows.length]);
   csvDownload(`Lich_lam_viec_${(s.name||'bo_phan').replace(/\s+/g,'_')}.csv`, rows);
   showToast('✅ Đã xuất lịch làm việc');
 }
@@ -3911,12 +3912,12 @@ function llvPrint(sheetId){
     ${s.period?`<div class="sub">📅 Ngày/tháng: ${esc(s.period)}</div>`:''}
     ${s.warning?`<div class="warn">⚠️ ${esc(s.warning)}</div>`:''}
     <table>
-      <thead><tr><th>STT</th><th>Họ và tên</th><th>Giới tính</th><th>Thời gian</th><th>Xin nghỉ</th><th>Ghi chú</th></tr></thead>
+      <thead><tr><th>STT</th><th>Họ và tên</th><th>Giới tính</th><th>Thời gian</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        ${s.rows.map((r,i)=>`<tr><td>${i+1}</td><td class="name">${esc(r.name)}</td><td>${esc(r.gender)}</td><td>${esc(r.time)}</td><td>${esc(r.leave)}</td><td>${esc(r.note)}</td></tr>`).join('')}
+        ${s.rows.map((r,i)=>`<tr><td>${i+1}</td><td class="name">${esc(r.name)}</td><td>${esc(r.gender)}</td><td>${esc(r.time)}</td><td>${esc(r.note)}</td></tr>`).join('')}
       </tbody>
     </table>
-    <div class="foot"><span>Tổng số nhân viên: ${s.rows.length}</span><span>Số người xin nghỉ: ${s.rows.filter(r=>(r.leave||'').trim()).length}</span></div>
+    <div class="foot"><span>Tổng số nhân viên: ${s.rows.length}</span></div>
   </body></html>`;
   const w = window.open('', '_blank');
   if(!w){ showToast('❌ Trình duyệt chặn cửa sổ in, vui lòng cho phép popup', true); return; }

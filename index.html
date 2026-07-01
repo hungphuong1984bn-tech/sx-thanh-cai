@@ -730,6 +730,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
         Quản lý nhân sự
       </button>
+      <button class="sb-item" id="sbi-lichLamViec" onclick="goTab('lichLamViec')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Lịch làm việc
+      </button>
       <div class="sb-section">Tài khoản</div>
       <button class="sb-item" id="sbi-settings" onclick="goTab('settings')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -1085,7 +1089,7 @@ const PRI_COLOR = {
 // ════════════════════════════════════════════════════════════
 let currentUser = null;
 let currentTab  = 'dashboard';
-let DB = { orders:[], attendance:{}, workers:[], kyLuat:[], nghiPhep:[], users:[
+let DB = { orders:[], attendance:{}, workers:[], kyLuat:[], nghiPhep:[], lichLamViec:[], users:[
   {id:'u1',username:'admin',password:'admin123',role:'admin',name:'Quản trị viên',email:'admin@dongphuong.vn',phone:''},
   {id:'u2',username:'nhanvien',password:'nv123',role:'staff',name:'Nhân viên SX',email:'',phone:''}
 ]};
@@ -1131,7 +1135,7 @@ async function fbWrite(path, data, method='PUT'){
 // LOCAL STORAGE  – cache + fallback
 // ════════════════════════════════════════════════════════════
 function lsSave(){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify({orders:DB.orders,users:DB.users,attendance:DB.attendance,workers:DB.workers,kyLuat:DB.kyLuat,nghiPhep:DB.nghiPhep})); }catch(e){}
+  try{ localStorage.setItem(LS_KEY, JSON.stringify({orders:DB.orders,users:DB.users,attendance:DB.attendance,workers:DB.workers,kyLuat:DB.kyLuat,nghiPhep:DB.nghiPhep,lichLamViec:DB.lichLamViec})); }catch(e){}
 }
 function lsLoad(){
   try{
@@ -1142,6 +1146,7 @@ function lsLoad(){
     if(d.workers) DB.workers = d.workers;
     if(d.kyLuat) DB.kyLuat = d.kyLuat;
     if(d.nghiPhep) DB.nghiPhep = d.nghiPhep;
+    if(d.lichLamViec) DB.lichLamViec = d.lichLamViec;
   }catch(e){}
 }
 function logLoad(){
@@ -1183,7 +1188,7 @@ function saveAll(){
   lsSave();
   if(!fbOk()) return;
   setSyncDot('saving');
-  fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers, kyLuat:DB.kyLuat, nghiPhep:DB.nghiPhep}, 'PUT')
+  fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers, kyLuat:DB.kyLuat, nghiPhep:DB.nghiPhep, lichLamViec:DB.lichLamViec}, 'PUT')
     .then(()=>setSyncDot('ok'))
     .catch(e=>{ setSyncDot('error'); showToast('❌ Lỗi: '+e.message, true); });
 }
@@ -1202,6 +1207,15 @@ function saveWorkers(){
   if(!fbOk()) return;
   setSyncDot('saving');
   fbWrite('/data/workers', DB.workers, 'PUT')
+    .then(()=>setSyncDot('ok'))
+    .catch(e=>{ setSyncDot('error'); showToast('❌ Lỗi sync: '+e.message, true); });
+}
+
+function saveLichLamViec(){
+  lsSave();
+  if(!fbOk()) return;
+  setSyncDot('saving');
+  fbWrite('/data/lichLamViec', DB.lichLamViec, 'PUT')
     .then(()=>setSyncDot('ok'))
     .catch(e=>{ setSyncDot('error'); showToast('❌ Lỗi sync: '+e.message, true); });
 }
@@ -1416,12 +1430,13 @@ async function initAndStartSync(){
         if(data.workers){ DB.workers = data.workers; }
         if(data.kyLuat){ DB.kyLuat = data.kyLuat; }
         if(data.nghiPhep){ DB.nghiPhep = data.nghiPhep; }
+        if(data.lichLamViec){ DB.lichLamViec = data.lichLamViec; }
         lsSave();
         _lastHash = hashOrders(DB.orders);
         DB.orders.forEach(o=>_knownIds.add(o.id));
       } else {
         // Lần đầu: đẩy data lên
-        await fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers, kyLuat:DB.kyLuat, nghiPhep:DB.nghiPhep}, 'PUT');
+        await fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers, kyLuat:DB.kyLuat, nghiPhep:DB.nghiPhep, lichLamViec:DB.lichLamViec}, 'PUT');
       }
       // Load log
       const log = await fbRead('/log');
@@ -1489,6 +1504,9 @@ async function doPoll(){
     }
     if(data.nghiPhep && JSON.stringify(data.nghiPhep)!==JSON.stringify(DB.nghiPhep)){
       DB.nghiPhep = data.nghiPhep; changed = true;
+    }
+    if(data.lichLamViec && JSON.stringify(data.lichLamViec)!==JSON.stringify(DB.lichLamViec)){
+      DB.lichLamViec = data.lichLamViec; changed = true;
     }
     const freshLog = await fbRead('/log');
     if(Array.isArray(freshLog) && freshLog.length > actLog.length){
@@ -1987,7 +2005,7 @@ function goTab(tab){
   document.querySelectorAll('.bn').forEach(x=>x.classList.remove('active'));
   const bn=$('bn-'+tab); if(bn) bn.classList.add('active');
   // Title
-  const titles={dashboard:'Dashboard',dorDang:'Đơn đang làm',keHoach:'Kế hoạch SX',hoanThanh:'Hoàn thành',baoCao:'Báo cáo',chamCong:'Quản lý nhân sự',nhatKy:'Nhật ký thao tác',settings:'Cài đặt'};
+  const titles={dashboard:'Dashboard',dorDang:'Đơn đang làm',keHoach:'Kế hoạch SX',hoanThanh:'Hoàn thành',baoCao:'Báo cáo',chamCong:'Quản lý nhân sự',lichLamViec:'Lịch làm việc',nhatKy:'Nhật ký thao tác',settings:'Cài đặt'};
   $('pageTitle').textContent=titles[tab]||tab;
   // FAB: admin mới thấy nút thêm đơn
   // FAB: admin thấy nút + ở tất cả các tab
@@ -2019,7 +2037,7 @@ function updateBadges(){
 // RENDER
 // ════════════════════════════════════════════════════════════
 function renderTab(tab){
-  const fns={dashboard:renderDashboard,dorDang:renderDorDang,keHoach:renderKeHoach,hoanThanh:renderHoanThanh,baoCao:renderBaoCao,chamCong:renderChamCong,nhatKy:renderNhatKy,settings:renderSettings};
+  const fns={dashboard:renderDashboard,dorDang:renderDorDang,keHoach:renderKeHoach,hoanThanh:renderHoanThanh,baoCao:renderBaoCao,chamCong:renderChamCong,lichLamViec:renderLichLamViec,nhatKy:renderNhatKy,settings:renderSettings};
   if(fns[tab]) fns[tab]();
 }
 
@@ -3685,6 +3703,226 @@ function printAttendance(){
   w.onload = ()=>{ w.focus(); w.print(); };
 }
 
+
+// ════════════════════════════════════════════════════════════
+// LỊCH LÀM VIỆC (Nhân sự)
+// ════════════════════════════════════════════════════════════
+let _llvActive = null;
+
+function llvSeedIfEmpty(){
+  if(DB.lichLamViec && DB.lichLamViec.length) return;
+  DB.lichLamViec = [{
+    id:'llv_thanhcai',
+    name:'Bộ phận Thanh Cái',
+    period:'28/06 đến hết ngày 04/07/2026',
+    warning:'Lịch có thể thay đổi đột xuất – Anh em nhớ xem thông báo thường xuyên!',
+    rows:[
+      {stt:1,name:'Lò Văn Mạnh',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:2,name:'Hà Văn Tú',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:3,name:'Lò Thanh Tú',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:4,name:'Hà Quốc Bình',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:5,name:'Ngần Văn Lai',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:6,name:'Thăng Văn Sơn',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:7,name:'Hà Văn Đoàn',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:8,name:'Hà Văn Thắng',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:9,name:'Lò Minh Đức',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:10,name:'Hà Văn Bảo',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:11,name:'Ngần Văn Hiệp',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:12,name:'Tòng Văn Nghìn',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:13,name:'Nguyễn Duy Khánh',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:14,name:'Nguyễn Văn Duy',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:15,name:'Hà Văn Hùng',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:16,name:'Khà Văn Hoài',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:17,name:'Lò Văn Thức',gender:'Nam',time:'Ca 1 : 6h – 17h',leave:'',note:''},
+      {stt:18,name:'Nguyễn Đức Thủy',gender:'Nam',time:'HC : 7h – 17h',leave:'',note:''},
+      {stt:19,name:'Ngần Văn Hải',gender:'Nam',time:'HC : 7h – 17h',leave:'',note:''},
+      {stt:20,name:'Khà Đức Duy',gender:'Nam',time:'HC : 7h – 17h',leave:'',note:''},
+      {stt:21,name:'Nguyễn Minh Chính',gender:'Nam',time:'HC : 7h – 17h',leave:'',note:''},
+      {stt:22,name:'Vì Văn Tuấn',gender:'Nam',time:'HC : 7h – 17h',leave:'',note:''},
+      {stt:23,name:'Vì Văn Nhã',gender:'Nam',time:'HC : 7h – 17h',leave:'',note:''}
+    ]
+  }];
+}
+
+function renderLichLamViec(){
+  llvSeedIfEmpty();
+  const admin = isAdmin();
+  const list = DB.lichLamViec||[];
+  if(!_llvActive || !list.find(s=>s.id===_llvActive)) _llvActive = list.length?list[0].id:null;
+  const sheet = list.find(s=>s.id===_llvActive);
+
+  $('mc').innerHTML = `
+    <div class="card" style="padding:12px 14px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        ${list.map(s=>`<button class="chip${s.id===_llvActive?' active':''}" onclick="llvSelect('${s.id}')">${(s.name||'Bộ phận').replace(/</g,'&lt;')}</button>`).join('')}
+        ${admin?`<button class="chip" onclick="llvAddSheet()">➕ Thêm bộ phận</button>`:''}
+      </div>
+    </div>
+    ${sheet?`
+    <div class="card" style="padding:12px 14px">
+      <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Tên bộ phận</label>
+      <input class="field-inp" value="${(sheet.name||'').replace(/"/g,'&quot;')}" ${admin?'':'readonly'} onchange="llvSetMeta('${sheet.id}','name',this.value)" style="margin:4px 0 10px">
+      <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">📅 Thời gian áp dụng</label>
+      <input class="field-inp" value="${(sheet.period||'').replace(/"/g,'&quot;')}" ${admin?'':'readonly'} onchange="llvSetMeta('${sheet.id}','period',this.value)" style="margin:4px 0 10px">
+      <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">⚠️ Ghi chú / cảnh báo chung</label>
+      <input class="field-inp" value="${(sheet.warning||'').replace(/"/g,'&quot;')}" ${admin?'':'readonly'} onchange="llvSetMeta('${sheet.id}','warning',this.value)" style="margin:4px 0 0">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        ${admin?`<button class="set-btn" style="width:auto;padding:9px 16px;font-size:12.5px;background:var(--brand);color:#fff;font-weight:700" onclick="llvAddRow('${sheet.id}')">➕ Thêm nhân viên</button>`:''}
+        <button class="set-btn" style="width:auto;padding:8px 14px;font-size:12.5px" onclick="llvPrint('${sheet.id}')">🖨️ In lịch (A4)</button>
+        <button class="set-btn" style="width:auto;padding:8px 14px;font-size:12.5px" onclick="llvExportExcel('${sheet.id}')">⬇️ Xuất Excel (.csv)</button>
+        ${admin?`<button class="set-btn" style="width:auto;padding:8px 14px;font-size:12.5px;color:var(--red-m)" onclick="llvDeleteSheet('${sheet.id}')">🗑 Xóa bộ phận này</button>`:''}
+      </div>
+    </div>
+    <div class="card" style="padding:8px;overflow-x:auto;margin-top:0">
+      <table style="border-collapse:collapse;font-size:12px;width:100%;min-width:640px">
+        <thead>
+          <tr>
+            <th style="border:1px solid var(--border);padding:6px;min-width:36px">STT</th>
+            <th style="border:1px solid var(--border);padding:6px;min-width:150px;text-align:left">Họ và tên</th>
+            <th style="border:1px solid var(--border);padding:6px;min-width:80px">Giới tính</th>
+            <th style="border:1px solid var(--border);padding:6px;min-width:150px">Thời gian</th>
+            <th style="border:1px solid var(--border);padding:6px;min-width:100px">Xin nghỉ</th>
+            <th style="border:1px solid var(--border);padding:6px;min-width:120px">Ghi chú</th>
+            ${admin?'<th style="border:1px solid var(--border);padding:6px;min-width:30px"></th>':''}
+          </tr>
+        </thead>
+        <tbody>
+          ${sheet.rows.map((r,i)=>`<tr>
+            <td style="border:1px solid var(--border);padding:4px;text-align:center">${i+1}</td>
+            <td style="border:1px solid var(--border);padding:2px">
+              <input value="${(r.name||'').replace(/"/g,'&quot;')}" placeholder="Họ và tên" ${admin?'':'readonly'} onchange="llvSetCell('${sheet.id}',${i},'name',this.value)" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px;outline:none;color:var(--text)">
+            </td>
+            <td style="border:1px solid var(--border);padding:2px">
+              <input value="${(r.gender||'').replace(/"/g,'&quot;')}" placeholder="Nam/Nữ" ${admin?'':'readonly'} onchange="llvSetCell('${sheet.id}',${i},'gender',this.value)" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px;outline:none;color:var(--text);text-align:center">
+            </td>
+            <td style="border:1px solid var(--border);padding:2px">
+              <input value="${(r.time||'').replace(/"/g,'&quot;')}" placeholder="Ca 1 : 6h – 17h" ${admin?'':'readonly'} onchange="llvSetCell('${sheet.id}',${i},'time',this.value)" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px;outline:none;color:var(--text)">
+            </td>
+            <td style="border:1px solid var(--border);padding:2px">
+              <input value="${(r.leave||'').replace(/"/g,'&quot;')}" placeholder="" ${admin?'':'readonly'} onchange="llvSetCell('${sheet.id}',${i},'leave',this.value)" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px;outline:none;color:var(--amber-m);text-align:center">
+            </td>
+            <td style="border:1px solid var(--border);padding:2px">
+              <input value="${(r.note||'').replace(/"/g,'&quot;')}" placeholder="" ${admin?'':'readonly'} onchange="llvSetCell('${sheet.id}',${i},'note',this.value)" style="width:100%;border:none;background:transparent;font-size:12px;font-family:inherit;padding:4px;outline:none;color:var(--text3)">
+            </td>
+            ${admin?`<td style="border:1px solid var(--border);padding:2px;text-align:center"><button class="icon-btn del" onclick="llvDeleteRow('${sheet.id}',${i})" style="font-size:12px">🗑</button></td>`:''}
+          </tr>`).join('')}
+          ${sheet.rows.length===0?`<tr><td colspan="${admin?7:6}" style="padding:16px;text-align:center;color:var(--text4);border:1px solid var(--border)">Chưa có nhân viên nào trong lịch${admin?' · bấm "➕ Thêm nhân viên" để bắt đầu':''}</td></tr>`:''}
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="padding:12px 14px;margin-top:8px;font-size:12px;color:var(--text3)">
+      <b>Tổng số nhân viên:</b> ${sheet.rows.length} &nbsp;·&nbsp; <b>Số người xin nghỉ:</b> ${sheet.rows.filter(r=>(r.leave||'').trim()).length}
+    </div>
+    `:`<div class="card" style="padding:24px;text-align:center;color:var(--text4)">Chưa có lịch làm việc nào${admin?' · bấm "➕ Thêm bộ phận" để tạo lịch đầu tiên':''}</div>`}
+  `;
+}
+
+function llvSelect(id){ _llvActive = id; renderLichLamViec(); }
+
+function llvAddSheet(){
+  const id = 'llv_'+uid();
+  DB.lichLamViec.push({id, name:'Bộ phận mới', period:'', warning:'', rows:[]});
+  _llvActive = id;
+  saveLichLamViec();
+  log('Thêm lịch làm việc', 'Đã tạo lịch làm việc cho 1 bộ phận mới', '', null, {sheetId:id});
+  renderLichLamViec();
+}
+
+function llvSetMeta(sheetId, field, value){
+  const s = DB.lichLamViec.find(x=>x.id===sheetId); if(!s) return;
+  const old = s[field];
+  value = (value||'').trim();
+  if(old===value) return;
+  s[field] = value;
+  saveLichLamViec();
+  log('Sửa lịch làm việc', `${s.name||'(bộ phận)'} · cập nhật ${field}`, '', {[field]:old}, {[field]:value});
+}
+
+function llvDeleteSheet(sheetId){
+  const s = DB.lichLamViec.find(x=>x.id===sheetId); if(!s) return;
+  confirm2('Xóa lịch làm việc', `Xóa toàn bộ lịch làm việc của "${s.name||'(bộ phận)'}"?`, ()=>{
+    DB.lichLamViec = DB.lichLamViec.filter(x=>x.id!==sheetId);
+    _llvActive = null;
+    saveLichLamViec();
+    log('Xóa lịch làm việc', `${s.name||'(bộ phận)'}`, '', {sheetId,name:s.name}, null);
+    renderLichLamViec();
+    showToast('Đã xóa');
+  });
+}
+
+function llvAddRow(sheetId){
+  const s = DB.lichLamViec.find(x=>x.id===sheetId); if(!s) return;
+  s.rows.push({stt:s.rows.length+1,name:'',gender:'',time:'',leave:'',note:''});
+  saveLichLamViec();
+  log('Thêm nhân viên vào lịch', `${s.name||'(bộ phận)'} · thêm 1 dòng mới`, '', null, null);
+  renderLichLamViec();
+}
+
+function llvSetCell(sheetId, idx, field, value){
+  const s = DB.lichLamViec.find(x=>x.id===sheetId); if(!s) return;
+  const row = s.rows[idx]; if(!row) return;
+  row[field] = value;
+  saveLichLamViec();
+}
+
+function llvDeleteRow(sheetId, idx){
+  const s = DB.lichLamViec.find(x=>x.id===sheetId); if(!s) return;
+  const row = s.rows[idx]; if(!row) return;
+  confirm2('Xóa khỏi lịch', `Xóa "${row.name||'(chưa có tên)'}" khỏi lịch làm việc?`, ()=>{
+    s.rows.splice(idx,1);
+    saveLichLamViec();
+    renderLichLamViec();
+    showToast('Đã xóa');
+  });
+}
+
+function llvExportExcel(sheetId){
+  const s = DB.lichLamViec.find(x=>x.id===sheetId); if(!s) return;
+  const rows = [];
+  rows.push([`LỊCH LÀM VIỆC BỘ PHẬN ${(s.name||'').toUpperCase()}`]);
+  if(s.period) rows.push([`Ngày/tháng: ${s.period}`]);
+  if(s.warning) rows.push([s.warning]);
+  rows.push([]);
+  rows.push(['STT','HỌ VÀ TÊN','GIỚI TÍNH','THỜI GIAN','XIN NGHỈ','GHI CHÚ']);
+  s.rows.forEach((r,i)=>rows.push([i+1, r.name||'', r.gender||'', r.time||'', r.leave||'', r.note||'']));
+  rows.push([]);
+  rows.push(['TỔNG SỐ NHÂN VIÊN', s.rows.length, '', 'SỐ NGƯỜI XIN NGHỈ', s.rows.filter(r=>(r.leave||'').trim()).length]);
+  csvDownload(`Lich_lam_viec_${(s.name||'bo_phan').replace(/\s+/g,'_')}.csv`, rows);
+  showToast('✅ Đã xuất lịch làm việc');
+}
+
+function llvPrint(sheetId){
+  const s = DB.lichLamViec.find(x=>x.id===sheetId); if(!s) return;
+  const esc = v=>(v||'').toString().replace(/</g,'&lt;');
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lịch làm việc ${esc(s.name)}</title>
+  <style>
+    @page{ size:A4 portrait; margin:10mm; }
+    body{ font-family:Arial,Helvetica,sans-serif; color:#000; }
+    h1{ text-align:center; font-size:16px; margin:0 0 4px; text-transform:uppercase }
+    .sub{ text-align:center; font-size:12px; margin-bottom:4px }
+    .warn{ text-align:center; font-size:11px; margin-bottom:10px; color:#b45309 }
+    table{ border-collapse:collapse; width:100%; font-size:11px }
+    th,td{ border:1px solid #000; padding:4px 6px; text-align:center }
+    th{ background:#f0f0f0; font-weight:bold }
+    td.name{ text-align:left }
+    .foot{ margin-top:10px; font-size:11px; display:flex; justify-content:space-between }
+  </style></head><body>
+    <h1>Lịch làm việc bộ phận ${esc(s.name)}</h1>
+    ${s.period?`<div class="sub">📅 Ngày/tháng: ${esc(s.period)}</div>`:''}
+    ${s.warning?`<div class="warn">⚠️ ${esc(s.warning)}</div>`:''}
+    <table>
+      <thead><tr><th>STT</th><th>Họ và tên</th><th>Giới tính</th><th>Thời gian</th><th>Xin nghỉ</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        ${s.rows.map((r,i)=>`<tr><td>${i+1}</td><td class="name">${esc(r.name)}</td><td>${esc(r.gender)}</td><td>${esc(r.time)}</td><td>${esc(r.leave)}</td><td>${esc(r.note)}</td></tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="foot"><span>Tổng số nhân viên: ${s.rows.length}</span><span>Số người xin nghỉ: ${s.rows.filter(r=>(r.leave||'').trim()).length}</span></div>
+  </body></html>`;
+  const w = window.open('', '_blank');
+  if(!w){ showToast('❌ Trình duyệt chặn cửa sổ in, vui lòng cho phép popup', true); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+  w.onload = ()=>{ w.focus(); w.print(); };
+}
 
 // ════════════════════════════════════════════════════════════
 // ORDERS CRUD

@@ -1067,7 +1067,7 @@ const PRI_COLOR = {
 // ════════════════════════════════════════════════════════════
 let currentUser = null;
 let currentTab  = 'dashboard';
-let DB = { orders:[], attendance:{}, workers:[], users:[
+let DB = { orders:[], attendance:{}, workers:[], kyLuat:[], users:[
   {id:'u1',username:'admin',password:'admin123',role:'admin',name:'Quản trị viên',email:'admin@dongphuong.vn',phone:''},
   {id:'u2',username:'nhanvien',password:'nv123',role:'staff',name:'Nhân viên SX',email:'',phone:''}
 ]};
@@ -1113,7 +1113,7 @@ async function fbWrite(path, data, method='PUT'){
 // LOCAL STORAGE  – cache + fallback
 // ════════════════════════════════════════════════════════════
 function lsSave(){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify({orders:DB.orders,users:DB.users,attendance:DB.attendance,workers:DB.workers})); }catch(e){}
+  try{ localStorage.setItem(LS_KEY, JSON.stringify({orders:DB.orders,users:DB.users,attendance:DB.attendance,workers:DB.workers,kyLuat:DB.kyLuat})); }catch(e){}
 }
 function lsLoad(){
   try{
@@ -1122,6 +1122,7 @@ function lsLoad(){
     if(d.users && d.users.length) DB.users = d.users;
     if(d.attendance) DB.attendance = d.attendance;
     if(d.workers) DB.workers = d.workers;
+    if(d.kyLuat) DB.kyLuat = d.kyLuat;
   }catch(e){}
 }
 function logLoad(){
@@ -1163,7 +1164,7 @@ function saveAll(){
   lsSave();
   if(!fbOk()) return;
   setSyncDot('saving');
-  fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers}, 'PUT')
+  fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers, kyLuat:DB.kyLuat}, 'PUT')
     .then(()=>setSyncDot('ok'))
     .catch(e=>{ setSyncDot('error'); showToast('❌ Lỗi: '+e.message, true); });
 }
@@ -1394,12 +1395,13 @@ async function initAndStartSync(){
         }
         if(data.attendance){ DB.attendance = data.attendance; }
         if(data.workers){ DB.workers = data.workers; }
+        if(data.kyLuat){ DB.kyLuat = data.kyLuat; }
         lsSave();
         _lastHash = hashOrders(DB.orders);
         DB.orders.forEach(o=>_knownIds.add(o.id));
       } else {
         // Lần đầu: đẩy data lên
-        await fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers}, 'PUT');
+        await fbWrite('/data', {orders:DB.orders, users:DB.users, attendance:DB.attendance, workers:DB.workers, kyLuat:DB.kyLuat}, 'PUT');
       }
       // Load log
       const log = await fbRead('/log');
@@ -1461,6 +1463,9 @@ async function doPoll(){
     }
     if(data.workers && JSON.stringify(data.workers)!==JSON.stringify(DB.workers)){
       DB.workers = data.workers; changed = true;
+    }
+    if(data.kyLuat && JSON.stringify(data.kyLuat)!==JSON.stringify(DB.kyLuat)){
+      DB.kyLuat = data.kyLuat; changed = true;
     }
     const freshLog = await fbRead('/log');
     if(Array.isArray(freshLog) && freshLog.length > actLog.length){
@@ -2811,7 +2816,7 @@ function renderBaoCao(){
 }
 
 // Nhật ký
-const ACT_ICO={'Đăng nhập':'🔑','Đăng xuất':'🚪','Thêm đơn':'🆕','Sửa đơn':'✏️','Xóa đơn':'🗑️','Đang chạy':'⚙️','Xong':'✅','Chờ SX':'⏳','Sửa TK':'👤','Thêm TK':'➕','Xóa TK':'🗑️','Đổi MK':'🔐','Đổi MK TK':'🔐','Chấm công':'🗓️','Thêm người lao động':'➕','Sửa tên người lao động':'✏️','Xóa người lao động':'🗑️','Lưu chấm công':'💾','Tự chốt sổ chấm công':'📦'};
+const ACT_ICO={'Đăng nhập':'🔑','Đăng xuất':'🚪','Thêm đơn':'🆕','Sửa đơn':'✏️','Xóa đơn':'🗑️','Đang chạy':'⚙️','Xong':'✅','Chờ SX':'⏳','Sửa TK':'👤','Thêm TK':'➕','Xóa TK':'🗑️','Đổi MK':'🔐','Đổi MK TK':'🔐','Chấm công':'🗓️','Thêm người lao động':'➕','Sửa tên người lao động':'✏️','Xóa người lao động':'🗑️','Lưu chấm công':'💾','Tự chốt sổ chấm công':'📦','Kỷ luật':'⚠️'};
 // Format before/after thành dạng dễ đọc
 function fmtLogChange(obj){
   if(!obj) return '';
@@ -3192,7 +3197,145 @@ function renderChamCong(){
       <b>Ghi chú cách chấm:</b> Đủ ngày công = <b>1</b> · Nửa ngày công = <b>0.5</b> · Không công = <b>0</b> · Làm thêm giờ thì cộng vào công ngày, ví dụ làm thêm 2 tiếng thì ghi <b>1.2</b> (1 là công 8h, 0.2 là 2h thêm giờ).<br>
       Sau khi chấm công xong cho tất cả mọi người, bấm nút <b>💾 Lưu chấm công</b> ở trên cùng 1 lần để lưu và đồng bộ toàn bộ bảng, tránh trường hợp thoát ra mà chưa kịp cập nhật.
     </div>
+
+    <!-- ════ MỤC KỶ LUẬT ════ -->
+    <div class="card" style="padding:14px;margin-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <div style="font-weight:700;font-size:15px;color:var(--brand)">⚠️ Kỷ luật nhân sự</div>
+        ${admin?`<button class="set-btn" style="width:auto;padding:8px 14px;font-size:12.5px;background:var(--red-m);color:#fff;font-weight:700;border:none;cursor:pointer" onclick="openKyLuatForm()">➕ Thêm kỷ luật</button>`:''}
+      </div>
+
+      <!-- Form thêm kỷ luật (ẩn mặc định) -->
+      ${admin?`<div id="kyLuatForm" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--text)">📝 Ghi nhận vi phạm kỷ luật</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Người vi phạm *</label>
+            <select id="kl_worker" class="field-inp" style="width:100%">
+              <option value="">-- Chọn người lao động --</option>
+              ${DB.workers.map(w=>`<option value="${w.id}">${w.name||'(Chưa đặt tên)'}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Ngày vi phạm *</label>
+            <input type="date" id="kl_date" class="field-inp" style="width:100%" value="${todayStr()}">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Hình thức kỷ luật *</label>
+            <select id="kl_loai" class="field-inp" style="width:100%">
+              <option value="Khiển trách">Khiển trách</option>
+              <option value="Cảnh cáo">Cảnh cáo</option>
+              <option value="Hạ bậc lương">Hạ bậc lương</option>
+              <option value="Sa thải">Sa thải</option>
+              <option value="Phạt tiền">Phạt tiền</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Người quyết định</label>
+            <input type="text" id="kl_nguoiqd" class="field-inp" style="width:100%" placeholder="Tên người ký quyết định">
+          </div>
+          <div style="grid-column:1/-1">
+            <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Lý do vi phạm *</label>
+            <textarea id="kl_lydo" class="field-inp" style="width:100%;min-height:60px;resize:vertical" placeholder="Mô tả hành vi vi phạm..."></textarea>
+          </div>
+          <div style="grid-column:1/-1">
+            <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Ghi chú thêm</label>
+            <input type="text" id="kl_ghichu" class="field-inp" style="width:100%" placeholder="Ghi chú (nếu có)">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="set-btn" style="width:auto;padding:9px 18px;background:var(--red-m);color:#fff;font-weight:700;border:none;cursor:pointer" onclick="saveKyLuat()">💾 Lưu kỷ luật</button>
+          <button class="set-btn" style="width:auto;padding:9px 14px;border:none;cursor:pointer" onclick="closeKyLuatForm()">✕ Hủy</button>
+        </div>
+      </div>`:''}
+
+      <!-- Danh sách kỷ luật -->
+      <div id="kyLuatList">
+        ${renderKyLuatList()}
+      </div>
+    </div>
   `;
+}
+
+function openKyLuatForm(){
+  const f = document.getElementById('kyLuatForm');
+  if(f){ f.style.display='block'; f.scrollIntoView({behavior:'smooth',block:'start'}); }
+}
+function closeKyLuatForm(){
+  const f = document.getElementById('kyLuatForm');
+  if(f) f.style.display='none';
+}
+
+function saveKyLuat(){
+  const workerId = document.getElementById('kl_worker').value;
+  const date     = document.getElementById('kl_date').value;
+  const loai     = document.getElementById('kl_loai').value;
+  const lydo     = document.getElementById('kl_lydo').value.trim();
+  const nguoiqd  = document.getElementById('kl_nguoiqd').value.trim();
+  const ghichu   = document.getElementById('kl_ghichu').value.trim();
+  if(!workerId){ showToast('⚠️ Vui lòng chọn người vi phạm', true); return; }
+  if(!date){ showToast('⚠️ Vui lòng chọn ngày vi phạm', true); return; }
+  if(!lydo){ showToast('⚠️ Vui lòng nhập lý do vi phạm', true); return; }
+  const worker = DB.workers.find(w=>w.id===workerId);
+  const rec = { id:'kl_'+Date.now(), workerId, workerName:worker?worker.name:'', date, loai, lydo, nguoiqd, ghichu, createdAt:todayStr() };
+  if(!DB.kyLuat) DB.kyLuat=[];
+  DB.kyLuat.unshift(rec);
+  lsSave();
+  if(fbOk()){
+    fbWrite('/data/kyLuat', DB.kyLuat, 'PUT').catch(()=>{});
+  }
+  log('Kỷ luật', `${worker?worker.name:'?'} · ${loai} · ${date}`, '', '', '');
+  showToast('✅ Đã lưu kỷ luật');
+  closeKyLuatForm();
+  const listEl = document.getElementById('kyLuatList');
+  if(listEl) listEl.innerHTML = renderKyLuatList();
+}
+
+function deleteKyLuat(id){
+  confirm2('Xóa kỷ luật','Xác nhận xóa bản ghi kỷ luật này?', ()=>{
+    DB.kyLuat = (DB.kyLuat||[]).filter(k=>k.id!==id);
+    lsSave();
+    if(fbOk()) fbWrite('/data/kyLuat', DB.kyLuat, 'PUT').catch(()=>{});
+    showToast('🗑️ Đã xóa');
+    const listEl = document.getElementById('kyLuatList');
+    if(listEl) listEl.innerHTML = renderKyLuatList();
+  });
+}
+
+function renderKyLuatList(){
+  const list = (DB.kyLuat||[]);
+  if(list.length===0) return `<div style="text-align:center;color:var(--text4);padding:18px;font-size:13px">Chưa có hồ sơ kỷ luật nào</div>`;
+  const admin = isAdmin();
+  const loaiColor = {'Khiển trách':'#f59e0b','Cảnh cáo':'#ef4444','Hạ bậc lương':'#8b5cf6','Sa thải':'#dc2626','Phạt tiền':'#f97316','Khác':'#6b7280'};
+  return `<div style="overflow-x:auto">
+    <table style="border-collapse:collapse;width:100%;font-size:12px;min-width:600px">
+      <thead>
+        <tr style="background:var(--bg)">
+          <th style="border:1px solid var(--border);padding:7px 8px;text-align:left">Ngày</th>
+          <th style="border:1px solid var(--border);padding:7px 8px;text-align:left">Người vi phạm</th>
+          <th style="border:1px solid var(--border);padding:7px 8px;text-align:center">Hình thức</th>
+          <th style="border:1px solid var(--border);padding:7px 8px;text-align:left">Lý do</th>
+          <th style="border:1px solid var(--border);padding:7px 8px;text-align:left">Người quyết định</th>
+          <th style="border:1px solid var(--border);padding:7px 8px;text-align:left">Ghi chú</th>
+          ${admin?'<th style="border:1px solid var(--border);padding:7px 8px;width:36px"></th>':''}
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map(k=>`<tr>
+          <td style="border:1px solid var(--border);padding:6px 8px;white-space:nowrap">${k.date||''}</td>
+          <td style="border:1px solid var(--border);padding:6px 8px;font-weight:600">${(k.workerName||'').replace(/</g,'&lt;')}</td>
+          <td style="border:1px solid var(--border);padding:6px 8px;text-align:center">
+            <span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;background:${loaiColor[k.loai]||'#6b7280'}">${k.loai||''}</span>
+          </td>
+          <td style="border:1px solid var(--border);padding:6px 8px;max-width:220px">${(k.lydo||'').replace(/</g,'&lt;')}</td>
+          <td style="border:1px solid var(--border);padding:6px 8px">${(k.nguoiqd||'—').replace(/</g,'&lt;')}</td>
+          <td style="border:1px solid var(--border);padding:6px 8px;color:var(--text3)">${(k.ghichu||'').replace(/</g,'&lt;')}</td>
+          ${admin?`<td style="border:1px solid var(--border);padding:4px;text-align:center"><button class="icon-btn del" onclick="deleteKyLuat('${k.id}')" style="font-size:13px" title="Xóa">🗑</button></td>`:''}
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
 }
 
 function csvDownload(filename, rows){

@@ -148,20 +148,31 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .ns-table th{background:var(--bg);border:1px solid var(--border);padding:7px 8px;text-align:left;font-weight:700;color:var(--text3);font-size:11.5px}
 .ns-table td{border:1px solid var(--border);padding:6px 8px;vertical-align:middle}
 .ns-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
-.card-actions{display:flex;gap:0;border-top:1px solid var(--border)}
-.ca-btn{flex:1;padding:9px 4px;border:none;border-right:1px solid var(--border);background:var(--bg);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--text3);transition:all .12s}
-.ca-btn:last-child{border-right:none}
-.ca-btn.active-wait{background:var(--amber-l);color:var(--amber)}
-.ca-btn.active-run{background:#dbeafe;color:var(--brand)}
-.ca-btn.active-done{background:var(--green-l);color:var(--green)}
-.ca-btn.danger{color:var(--red-m)}
-.ca-btn:active{opacity:.7}
+.card-actions{border-top:1px solid var(--border);background:linear-gradient(180deg,#fafbfc,var(--card) 40%);padding:9px 9px 8px}
+.ca-status-row{display:flex;gap:6px}
+.ca-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px 7px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text3);transition:transform .12s,background .15s,border-color .15s,color .15s,box-shadow .15s;line-height:1.15}
+.ca-btn .ca-ico{font-size:15px;line-height:1}
+.ca-btn:hover{border-color:var(--text4)}
+.ca-btn:active{transform:scale(.94)}
+.ca-btn.active-wait{background:var(--amber-l);color:var(--amber);border-color:var(--amber-m);box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+.ca-btn.active-run{background:linear-gradient(135deg,#dbeafe,#eff6ff);color:var(--brand);border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.ca-btn.active-done{background:var(--green-l);color:var(--green);border-color:#86efac;box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+.ca-util-row{display:flex;gap:6px;margin-top:6px}
+.ca-util-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 6px;border:1.5px solid var(--border);border-radius:9px;background:var(--bg);font-size:11.5px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text2);transition:transform .12s,background .15s,border-color .15s,color .15s}
+.ca-util-btn:hover{border-color:var(--text4)}
+.ca-util-btn:active{transform:scale(.94)}
+.ca-util-btn.progress{color:var(--brand);border-color:#bfdbfe;background:#eff6ff;flex:2}
+.ca-util-btn.progress:hover{background:#dbeafe;border-color:#93c5fd}
+.ca-icon-btn{flex:0 0 40px;padding:8px 0}
+.ca-util-btn.edit:hover{border-color:var(--brand3);color:var(--brand);background:#eff6ff}
+.ca-util-btn.danger{color:var(--red-m);background:var(--red-l);border-color:#fecaca}
+.ca-util-btn.danger:hover{background:#fecaca;border-color:var(--red-m)}
 
 /* ── STATUS BADGES ── */
-.badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
-.b-wait{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-m)}
-.b-run{background:linear-gradient(135deg,#dbeafe,#eff6ff);color:var(--brand);border:1px solid #93c5fd;animation:pulse-run 2s infinite}
-.b-done{background:linear-gradient(135deg,var(--green-l),#f0fdf4);color:var(--green);border:1px solid #86efac}
+.badge{font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;letter-spacing:.1px}
+.b-wait{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-m);box-shadow:0 1px 2px rgba(146,64,14,.08)}
+.b-run{background:linear-gradient(135deg,#dbeafe,#eff6ff);color:var(--brand);border:1px solid #93c5fd;animation:pulse-run 2s infinite;box-shadow:0 1px 2px rgba(37,99,235,.1)}
+.b-done{background:linear-gradient(135deg,var(--green-l),#f0fdf4);color:var(--green);border:1px solid #86efac;box-shadow:0 1px 2px rgba(6,95,70,.08)}
 @keyframes pulse-run{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.25)}50%{box-shadow:0 0 0 4px rgba(37,99,235,.08)}}
 /* Đồng hồ số chạy */
 .run-clock{font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;font-family:monospace;background:#0f172a;color:#60a5fa;padding:2px 8px;border-radius:6px;letter-spacing:1px;white-space:nowrap}
@@ -254,20 +265,28 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 /* ── FILTER CHIPS ── */
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .chips::-webkit-scrollbar{display:none}
-.chip{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;background:#fff;color:var(--text3);white-space:nowrap;transition:all .12s}
+.chip{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;background:#fff;color:var(--text3);white-space:nowrap;transition:all .12s;flex-shrink:0}
 .chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.chip.chip-done{border-color:#86efac;background:var(--green-l);color:var(--green)}
+.chip.chip-done:active{transform:scale(.96)}
+
+/* ── STICKY TOOLBAR (tab đơn dở dang) ── */
+.dd-toolbar{position:sticky;top:-12px;z-index:15;background:var(--bg);margin:-12px -12px 10px;padding:12px 12px 8px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border)}
+@media(min-width:700px){.dd-toolbar{margin:-20px -24px 14px;padding:20px 24px 10px}}
 
 /* ── KẾ HOẠCH SUMMARY ── */
 .kh-summary{display:grid;grid-template-columns:repeat(3,1fr);background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
-.kh-sum{display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:3px;cursor:pointer;border:none;background:none;font-family:inherit;transition:background .15s;flex:1;text-align:center}
-.kh-sum:active{background:var(--bg)}
+.kh-sum{display:flex;flex-direction:column;align-items:center;padding:14px 8px;gap:3px;cursor:pointer;border:none;background:none;font-family:inherit;transition:background .15s,transform .12s;flex:1;text-align:center;position:relative}
+.kh-sum::after{content:'';position:absolute;left:14%;right:14%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:transparent;transition:background .15s}
+.kh-sum:hover{background:var(--bg)}
+.kh-sum:active{transform:scale(.97)}
 .kh-sum + .kh-sum{border-left:1px solid var(--border)}
 .kh-sum-n{font-size:26px;font-weight:800;line-height:1}
-.kh-sum-l{font-size:10.5px;color:var(--text3);font-weight:500}
+.kh-sum-l{font-size:10.5px;color:var(--text3);font-weight:600;letter-spacing:.1px}
 .wait-c{color:var(--amber-m)}.run-c{color:var(--brand3)}.done-c{color:var(--green-m)}
-.kh-sec-hd{display:flex;align-items:center;gap:7px;padding:2px 0}
-.kh-sec-hd span{font-size:12.5px;font-weight:700;color:var(--text2)}
-.kh-count{background:var(--border);color:var(--text3);font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;margin-left:auto}
+.kh-sec-hd{display:flex;align-items:center;gap:8px;padding:4px 2px}
+.kh-sec-hd span:first-child{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-.1px}
+.kh-count{background:var(--card);color:var(--text2);font-size:11px;font-weight:800;padding:2px 9px;border-radius:20px;margin-left:auto;border:1.5px solid var(--border);box-shadow:var(--sh)}
 
 /* ── ACTIVITY LOG ── */
 .act-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start}
@@ -2617,12 +2636,11 @@ function ddPriCard(o, rank){
       ${renderStageTracker(o, canStatus)}
 
       <!-- Nút thao tác -->
-      ${canStatus?`<div class="card-actions" style="margin-top:8px;padding:0">
-        ${s!=='running'?`<button class="ca-btn active-run" onclick="setStatus('${o.id}','running')">⚙️ Chạy</button>`:''}
-        ${s==='running'?`<button class="ca-btn active-done" onclick="setStatus('${o.id}','done')">✅ Xong</button>`:''}
-        ${s!=='pending'?`<button class="ca-btn active-wait" onclick="setStatus('${o.id}','pending')">⏳ Chờ</button>`:''}
-        <button class="ca-btn" style="color:var(--brand)" onclick="openProgress('${o.id}')">📊</button>
-        ${canEdit?`<button class="ca-btn" onclick="editOrder('${o.id}')">✏️</button><button class="ca-btn danger" onclick="deleteOrder('${o.id}')">🗑</button>`:''}
+      ${canStatus?`<div class="card-actions" style="margin-top:8px;padding:0;border-top:none;background:none">
+        <div class="ca-util-row" style="margin-top:0">
+          <button class="ca-util-btn progress" onclick="event.stopPropagation();openProgress('${o.id}')" title="Xem tiến độ chi tiết">📊 Tiến độ</button>
+          ${canEdit?`<button class="ca-util-btn edit ca-icon-btn" onclick="event.stopPropagation();editOrder('${o.id}')" title="Sửa đơn hàng">✏️</button><button class="ca-util-btn danger ca-icon-btn" onclick="event.stopPropagation();deleteOrder('${o.id}')" title="Xóa đơn hàng">🗑</button>`:''}
+        </div>
       </div>`:''}
     </div>
   </div>`;
@@ -2649,16 +2667,20 @@ function renderDorDang(){
   });
   if(searchQ){ newList=newList.filter(o=>matchSearch(o,searchQ)); priList=priList.filter(o=>matchSearch(o,searchQ)); }
   if(filterStatus!=='all'){ const f=o=>filterStatus==='running'?o.status==='running'||o.status==='cutting':o.status===filterStatus; newList=newList.filter(f); priList=priList.filter(f); }
+  const doneCount = DB.orders.filter(o=>o.status==='done').length;
   $('mc').innerHTML=`
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="search-inp" id="srchInp" type="search" placeholder="🔍 Tìm khách hàng, PO, mã, kích thước..." value="${searchQ}" autocomplete="off" spellcheck="false">
-      ${searchQ?`<button onclick="clearSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:18px;cursor:pointer;color:var(--text4)">✕</button>`:''}
-    </div>
-    <div class="chips">
-      <button class="chip${filterStatus==='all'?' active':''}" onclick="filterStatus='all';renderDorDang()">Tất cả (${total})</button>
-      <button class="chip${filterStatus==='pending'?' active':''}" onclick="filterStatus='pending';renderDorDang()">⏳ Chờ SX</button>
-      <button class="chip${filterStatus==='running'?' active':''}" onclick="filterStatus='running';renderDorDang()">⚙️ Đang chạy</button>
+    <div class="dd-toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-inp" id="srchInp" type="search" placeholder="🔍 Tìm khách hàng, PO, mã, kích thước..." value="${searchQ}" autocomplete="off" spellcheck="false">
+        ${searchQ?`<button onclick="clearSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:18px;cursor:pointer;color:var(--text4)">✕</button>`:''}
+      </div>
+      <div class="chips">
+        <button class="chip${filterStatus==='all'?' active':''}" onclick="filterStatus='all';renderDorDang()">Tất cả (${total})</button>
+        <button class="chip${filterStatus==='pending'?' active':''}" onclick="filterStatus='pending';renderDorDang()">⏳ Chờ SX</button>
+        <button class="chip${filterStatus==='running'?' active':''}" onclick="filterStatus='running';renderDorDang()">⚙️ Đang chạy</button>
+        <button class="chip chip-done" onclick="goTab('hoanThanh')">✅ Xem hoàn thành (${doneCount})</button>
+      </div>
     </div>
     ${searchQ?`<div style="font-size:12px;color:var(--text3);padding:0 0 4px">Tìm thấy <b>${priList.length}</b> đơn</div>`:''}
     ${total===0&&!searchQ
@@ -2777,11 +2799,15 @@ function orderCardKH(o, seq){
     ${renderStageTracker(o, canStatus)}
     ${renderAIWarn(o)}
     ${canStatus?`<div class="card-actions">
-      <button class="ca-btn${s==='pending'?' active-wait':''}" onclick="setStatus('${o.id}','pending')">⏳ Chờ SX</button>
-      <button class="ca-btn${s==='running'?' active-run':''}" onclick="setStatus('${o.id}','running')">⚙️ Đang chạy</button>
-      <button class="ca-btn${s==='done'?' active-done':''}" onclick="setStatus('${o.id}','done')">✅ Xong</button>
-      <button class="ca-btn" style="color:var(--brand);font-size:11px" onclick="openProgress('${o.id}')">📊 Tiến độ</button>
-      ${canEdit?`<button class="ca-btn" onclick="editOrder('${o.id}')">✏️</button><button class="ca-btn danger" onclick="deleteOrder('${o.id}')">🗑</button>`:''}
+      <div class="ca-status-row">
+        <button class="ca-btn${s==='pending'?' active-wait':''}" onclick="setStatus('${o.id}','pending')" title="Chờ sản xuất"><span class="ca-ico">⏳</span>Chờ SX</button>
+        <button class="ca-btn${s==='running'?' active-run':''}" onclick="setStatus('${o.id}','running')" title="Đang sản xuất"><span class="ca-ico">⚙️</span>Đang chạy</button>
+        <button class="ca-btn${s==='done'?' active-done':''}" onclick="setStatus('${o.id}','done')" title="Hoàn thành"><span class="ca-ico">✅</span>Xong</button>
+      </div>
+      <div class="ca-util-row">
+        <button class="ca-util-btn progress" onclick="openProgress('${o.id}')" title="Xem tiến độ chi tiết">📊 Tiến độ</button>
+        ${canEdit?`<button class="ca-util-btn edit ca-icon-btn" onclick="editOrder('${o.id}')" title="Sửa đơn hàng">✏️</button><button class="ca-util-btn danger ca-icon-btn" onclick="deleteOrder('${o.id}')" title="Xóa đơn hàng">🗑</button>`:''}
+      </div>
     </div>`:''}
   </div>`;
 }
@@ -2828,23 +2854,25 @@ function renderKeHoach(){
   const showDone  = false; // Đơn done có tab riêng
 
   $('mc').innerHTML=`
-    <div class="search-wrap" style="margin-bottom:8px">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input class="search-inp" id="khSearch" type="search" placeholder="🔍 Tìm khách hàng, PO, mã..." value="${khSearchQ}" autocomplete="off">
-    </div>
-    <div class="kh-summary">
-      <button class="kh-sum" style="${wA}" onclick="setKhFilter(_khFilter==='pending'?'all':'pending')">
-        <div class="kh-sum-n wait-c">${waiting.length}</div>
-        <div class="kh-sum-l">⏳ Chờ SX</div>
-      </button>
-      <button class="kh-sum" style="${rA}" onclick="setKhFilter(_khFilter==='running'?'all':'running')">
-        <div class="kh-sum-n run-c">${running.length}</div>
-        <div class="kh-sum-l">⚙️ Đang chạy</div>
-      </button>
-      <button class="kh-sum" onclick="goTab('hoanThanh')" style="cursor:pointer">
-        <div class="kh-sum-n done-c">${DB.orders.filter(o=>o.status==='done').length}</div>
-        <div class="kh-sum-l">✅ Xem hoàn thành →</div>
-      </button>
+    <div class="dd-toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-inp" id="khSearch" type="search" placeholder="🔍 Tìm khách hàng, PO, mã..." value="${khSearchQ}" autocomplete="off">
+      </div>
+      <div class="kh-summary">
+        <button class="kh-sum" style="${wA}" onclick="setKhFilter(_khFilter==='pending'?'all':'pending')">
+          <div class="kh-sum-n wait-c">${waiting.length}</div>
+          <div class="kh-sum-l">⏳ Chờ SX</div>
+        </button>
+        <button class="kh-sum" style="${rA}" onclick="setKhFilter(_khFilter==='running'?'all':'running')">
+          <div class="kh-sum-n run-c">${running.length}</div>
+          <div class="kh-sum-l">⚙️ Đang chạy</div>
+        </button>
+        <button class="kh-sum" onclick="goTab('hoanThanh')" style="cursor:pointer">
+          <div class="kh-sum-n done-c">${DB.orders.filter(o=>o.status==='done').length}</div>
+          <div class="kh-sum-l">✅ Xem hoàn thành →</div>
+        </button>
+      </div>
     </div>
     ${showRun ?sec('kh-sec-run' ,'⚙️','Đang chạy'           ,running,true ):''}
     ${showWait?sec('kh-sec-wait','⏳','Chờ sản xuất'         ,waiting,true ):''}

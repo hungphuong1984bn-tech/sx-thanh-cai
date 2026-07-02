@@ -560,6 +560,11 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .card-progress-val{font-size:13.5px;font-weight:800;color:var(--brand)}
 .card-progress-bar{height:9px;background:var(--border);border-radius:6px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}
 .card-progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#3b82f6,#10b981);transition:width .5s cubic-bezier(.4,0,.2,1)}
+/* Khối RIÊNG: Mã nguyên liệu đầu vào (tách khỏi Tiến độ sản xuất) */
+.card-mat-sec{padding:8px 14px;border-top:1px solid var(--border);background:linear-gradient(135deg,#faf5ff,#f3e8ff);display:flex;flex-direction:column;gap:6px}
+.card-mat-sec-lbl{font-size:11.5px;font-weight:700;color:#7e22ce;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:4px}
+.card-mat-sec-list{display:flex;gap:5px;flex-wrap:wrap}
+.card-mat-sec .mat-chip{background:#fff;border-color:#e9d5ff;color:#6b21a8}
 /* Inline input trong card */
 .card-inline-inp{display:flex;gap:6px;padding:6px 14px;align-items:center;flex-wrap:wrap;border-top:1px dashed var(--border)}
 .card-inline-inp label{font-size:11.5px;font-weight:600;color:var(--text3);white-space:nowrap}
@@ -571,6 +576,24 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .mat-list{padding:4px 14px 6px;display:flex;gap:5px;flex-wrap:wrap}
 .mat-chip{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;color:var(--text2)}
 .mat-chip button{border:none;background:none;cursor:pointer;color:var(--red-m);font-size:14px;line-height:1;padding:0 0 0 2px}
+
+/* Stage tracker: Máy Đùn -> Máy Rút -> Đánh Bóng */
+.stage-tracker{padding:9px 14px 10px;border-top:1px solid var(--border)}
+.stage-tracker-lbl{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px}
+.stage-steps{display:flex;align-items:flex-start}
+.stage-step{display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;width:64px}
+.stage-step[data-clickable="1"]{cursor:pointer}
+.stage-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;border:2px solid var(--border);background:var(--card);color:var(--text4);transition:all .2s}
+.stage-name{font-size:9.5px;font-weight:700;color:var(--text4);text-align:center;line-height:1.2}
+.stage-line{flex:1 1 auto;height:2px;background:var(--border);margin:12px -2px 0;min-width:10px}
+.stage-step.st-done .stage-dot{background:var(--green-m);border-color:var(--green-m);color:#fff}
+.stage-step.st-done .stage-name{color:var(--green-m)}
+.stage-line.done{background:var(--green-m)}
+.stage-step.st-active .stage-dot{background:var(--brand);border-color:var(--brand);color:#fff;animation:pulse 1.5s infinite}
+.stage-step.st-active .stage-name{color:var(--brand);font-weight:800}
+.stage-step[data-clickable="1"]:active .stage-dot{transform:scale(.9)}
+/* Compact badge dùng ở dashboard mini-card */
+.stage-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#dbeafe;color:var(--brand);margin-top:4px}
 
 /* ══ DESKTOP RESPONSIVE ══════════════════════════════════════ */
 @media(min-width:700px){
@@ -1086,6 +1109,14 @@ const PRI_COLOR = {
   'GẤP 4':'#ca8a04','GẤP 5':'#65a30d','GẤP 6':'#0891b2',
   'GẤP 7':'#4f46e5','GẤP 8':'#7c3aed'
 };
+
+// Công đoạn sản xuất: Máy Đùn -> Máy Rút -> Đánh Bóng
+const STAGES = [
+  {key:'dun', label:'Máy Đùn', icon:'🔧'},
+  {key:'rut', label:'Máy Rút', icon:'🔩'},
+  {key:'danhbong', label:'Đánh Bóng', icon:'✨'}
+];
+const STAGE_LABEL = Object.fromEntries(STAGES.map(s=>[s.key, s.label]));
 
 // ════════════════════════════════════════════════════════════
 // STATE
@@ -2094,6 +2125,8 @@ function orderCard(o, showStatus=true){
     ${o.deliveryDate?`<div class="card-due${overdue?' overdue':''}">📅 Hạn giao: ${fmtDate(o.deliveryDate)}</div>`:''}
     ${o.note?`<div class="card-note">📝 ${o.note}</div>`:''}
     ${renderProgressBar(o)}
+    ${renderMaterialCodes(o)}
+    ${renderStageTracker(o, canStatus)}
     ${canStatus?`<div class="card-actions">
       <button class="ca-btn${s==='pending'?' active-wait':''}" onclick="setStatus('${o.id}','pending')">⏳ Chờ SX</button>
       <button class="ca-btn${s==='running'?' active-run':''}" onclick="setStatus('${o.id}','running')">⚙️ Đang chạy</button>
@@ -2139,6 +2172,8 @@ function dashMiniCard(o, onClick){
     </div>
     <div class="dash-mini-spec">${o.isRound&&o.phi?`Φ${o.phi}×${o.length||'?'}mm · ×${o.qty||0} cây`:`${o.thickness||'?'}×${o.width||'?'}×${o.length||'?'}mm · ×${o.qty||0}`} · ⚖️${o.kg||0}kg</div>
     ${o.po||o.type?`<div style="font-size:10.5px;color:var(--text4);margin-top:1px">${o.po?'PO:'+o.po+' ':''} ${o.type||''}</div>`:''}
+    ${renderStageBadge(o)}
+    ${o.matCodes&&o.matCodes.length?`<div style="font-size:10px;font-weight:700;color:#7e22ce;background:#f3e8ff;display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;margin-top:4px">🧵 ${o.matCodes.length>1?o.matCodes.length+' mã NL':o.matCodes[0]}</div>`:''}
     ${pct>0?`<div style="margin-top:4px">
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}%</span></div>
       <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px"></div></div>
@@ -2170,6 +2205,7 @@ function dashMiniCardNew(o){
       <span class="new-card-chip kg">⚖️ ${o.kg||0}kg</span>
       ${o.po?`<span class="new-card-chip">PO: ${o.po}</span>`:''}
     </div>
+    ${renderStageBadge(o)}
     ${pct>0?`<div style="margin-top:5px"><div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}%</span></div><div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px"></div></div></div>`:''}
     ${overdue?'<div class="ai-warn red" style="font-size:10px">⚠️ Quá hạn giao hàng</div>':''}
     <div class="new-card-time">🕐 ${ageStr} trước${o.deliveryDate?' · 📅 '+fmtDate(o.deliveryDate):''}</div>
@@ -2514,6 +2550,7 @@ function ddNewCard(o){
         <span class="badge ${si.cls}" style="font-size:9px;padding:1px 6px;border-radius:10px">${si.label}</span>
       </div>
       ${topW?`<div style="margin-top:4px;font-size:10.5px;font-weight:700;color:${topW.level==='red'?'#dc2626':'#b45309'};background:${topW.level==='red'?'#fee2e2':'#fef3c7'};padding:2px 7px;border-radius:5px;display:inline-block">${topW.msg}</div>`:''}
+      ${renderStageBadge(o)}
       <div class="dd-new-time">🕐 ${ageStr}${o.po?' · PO: '+o.po:''}</div>
     </div>
   </div>`;
@@ -2561,11 +2598,19 @@ function ddPriCard(o, rank){
       <!-- Progress -->
       ${pct>0?`<div style="margin-top:5px"><div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}% (${o.doneQty}/${o.qty})</span></div><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px"></div></div></div>`:''}
 
+      <!-- Mã nguyên liệu đầu vào (khối riêng) -->
+      ${o.matCodes&&o.matCodes.length?`<div style="margin-top:6px;padding:6px 8px;background:linear-gradient(135deg,#faf5ff,#f3e8ff);border-radius:6px;border:1px solid #e9d5ff">
+        <div style="font-size:9.5px;font-weight:700;color:#7e22ce;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px">🧵 Mã nguyên liệu đầu vào</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">${o.matCodes.map(m=>`<span class="mat-chip" style="background:#fff;border-color:#e9d5ff;color:#6b21a8;font-size:11px;padding:2px 7px">🏷 ${m}</span>`).join('')}</div>
+      </div>`:''}
+
       <!-- AI warnings -->
       ${ai.warnings.length?`<div style="margin-top:5px;display:flex;flex-direction:column;gap:3px">${ai.warnings.map(w=>`<div style="font-size:10.5px;font-weight:700;color:${w.level==='red'?'#dc2626':'#b45309'};background:${w.level==='red'?'#fee2e2':'#fef3c7'};padding:3px 8px;border-radius:5px">${w.level==='red'?'🚨':'⚠️'} ${w.msg}</div>`).join('')}</div>`:''}
 
       <!-- Ghi chú -->
       ${o.note?`<div style="margin-top:5px;padding:5px 9px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-left:3px solid #fbbf24;border-radius:0 6px 6px 0;font-size:12px;font-weight:600;color:#92400e;display:flex;align-items:flex-start;gap:5px"><span style="flex-shrink:0">📝</span><span>${o.note}</span></div>`:''}
+
+      ${renderStageTracker(o, canStatus)}
 
       <!-- Nút thao tác -->
       ${canStatus?`<div class="card-actions" style="margin-top:8px;padding:0">
@@ -2724,6 +2769,8 @@ function orderCardKH(o, seq){
     ${s==='running'&&o.startedAt?`<div class="card-due" style="color:var(--brand3)">▶ Bắt đầu: ${fmtDateTime(o.startedAt)}</div>`:''}
     ${o.note?`<div class="card-note">📝 ${o.note}</div>`:''}
     ${renderProgressBar(o)}
+    ${renderMaterialCodes(o)}
+    ${renderStageTracker(o, canStatus)}
     ${renderAIWarn(o)}
     ${canStatus?`<div class="card-actions">
       <button class="ca-btn${s==='pending'?' active-wait':''}" onclick="setStatus('${o.id}','pending')">⏳ Chờ SX</button>
@@ -4016,7 +4063,7 @@ function renderAIWarn(o){
   return `<div class="ai-card-warn">${rows}</div>`;
 }
 
-// Helper hiển thị progress bar
+// Helper hiển thị progress bar — CHỈ số lượng đã sản xuất (bao nhiêu thanh)
 function renderProgressBar(o){
   const qty=o.qty||0; const done=o.doneQty||0;
   if(!qty||o.status==='pending') return '';
@@ -4024,16 +4071,67 @@ function renderProgressBar(o){
   const color=pct>=100?'var(--green-m)':pct>=50?'var(--brand3)':'var(--amber-m)';
   return `<div class="card-progress">
     <div class="card-progress-top">
-      <span class="card-progress-lbl">Tiến độ sản xuất</span>
+      <span class="card-progress-lbl">📊 Tiến độ sản xuất</span>
       <span class="card-progress-val" style="color:${color}">${done}/${qty} thanh (${pct}%)</span>
     </div>
     <div class="card-progress-bar"><div class="card-progress-fill" style="width:${pct}%;background:${pct>=100?'var(--green-m)':''}"></div></div>
-    ${o.matCodes&&o.matCodes.length?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">${o.matCodes.map(m=>`<span class="mat-chip">🏷 ${m}</span>`).join('')}</div>`:''}
     ${o.progressNote?`<div style="margin-top:6px;padding:7px 10px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-left:3px solid var(--brand);border-radius:0 7px 7px 0;display:flex;align-items:flex-start;gap:6px">
       <span style="font-size:14px;flex-shrink:0">📋</span>
       <span style="font-size:12.5px;font-weight:700;color:#1e3a8a;line-height:1.5">${o.progressNote}</span>
     </div>`:''}
   </div>`;
+}
+
+// Khối RIÊNG: Mã nguyên liệu đầu vào — tách khỏi khối Tiến độ sản xuất
+function renderMaterialCodes(o){
+  if(!o.matCodes || !o.matCodes.length) return '';
+  return `<div class="card-mat-sec">
+    <div class="card-mat-sec-lbl">🧵 Mã nguyên liệu đầu vào</div>
+    <div class="card-mat-sec-list">${o.matCodes.map(m=>`<span class="mat-chip">🏷 ${m}</span>`).join('')}</div>
+  </div>`;
+}
+
+// ── Tiến độ công đoạn: Máy Đùn -> Máy Rút -> Đánh Bóng ──
+function renderStageTracker(o, clickable){
+  const s = o.status==='cutting'?'running':o.status;
+  if(s==='pending') return ''; // chưa chạy thì chưa có công đoạn
+  const curIdx = STAGES.findIndex(x=>x.key===o.stage);
+  const activeIdx = s==='done' ? STAGES.length : (curIdx<0?0:curIdx);
+  return `<div class="stage-tracker">
+    <div class="stage-tracker-lbl">🏭 Công đoạn sản xuất</div>
+    <div class="stage-steps">
+      ${STAGES.map((st,i)=>{
+        const state = i<activeIdx ? 'st-done' : (i===activeIdx&&s!=='done' ? 'st-active' : '');
+        const canClick = clickable && s!=='done';
+        return `${i>0?`<div class="stage-line${i<=activeIdx?' done':''}"></div>`:''}
+        <div class="stage-step ${state}" data-clickable="${canClick?1:0}" ${canClick?`onclick="setStage('${o.id}','${st.key}')"`:''} title="${st.label}">
+          <div class="stage-dot">${state==='st-done'?'✓':st.icon}</div>
+          <div class="stage-name">${st.label}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+// Badge gọn hiển thị công đoạn hiện tại (dùng ở mini-card dashboard)
+function renderStageBadge(o){
+  const s = o.status==='cutting'?'running':o.status;
+  if(s!=='running'||!o.stage) return '';
+  const st = STAGES.find(x=>x.key===o.stage);
+  if(!st) return '';
+  return `<span class="stage-badge">${st.icon} ${st.label}</span>`;
+}
+
+function setStage(id, stage){
+  const o = DB.orders.find(x=>x.id===id); if(!o) return;
+  if(!isStaff()) return;
+  const old = o.stage;
+  if(old===stage) return;
+  o.stage = stage;
+  log('Cập nhật công đoạn', `${o.customer||''} · ${STAGE_LABEL[stage]||stage}`, id, {stage:old||''}, {stage});
+  renderTab(currentTab);
+  showToast(`🏭 Công đoạn: ${STAGE_LABEL[stage]||stage}`);
+  saveOrders();
 }
 
 // Tự tính KG khi nhập Φ hoặc dày/rộng/dài/qty
@@ -4190,7 +4288,9 @@ function setStatus(id, newStatus){
   const before=o.status;
   o.status=newStatus;
   if(newStatus==='running'&&!o.startedAt) o.startedAt=Date.now();
+  if(newStatus==='running'&&!o.stage) o.stage='dun';
   if(newStatus==='done') o.doneAt=Date.now();
+  if(newStatus==='done') o.stage='danhbong';
   if(newStatus!=='done') delete o.doneAt;
   const lb={pending:'Chờ SX',running:'Đang chạy',done:'Xong'};
   log(lb[newStatus]||newStatus,

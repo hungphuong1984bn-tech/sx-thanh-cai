@@ -189,17 +189,17 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .dash-col-hd-count{font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px;min-width:24px;text-align:center}
 .dash-col-body{background:var(--card);flex:1;overflow:hidden}
 /* AI Warning Badge */
-.ai-warn{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;margin-top:4px;width:fit-content}
+.ai-warn{display:flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:6px;margin-top:3px;width:fit-content}
 .ai-warn.red{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5}
 .ai-warn.amber{background:#fffbeb;color:#b45309;border:1px solid #fcd34d}
 .ai-warn.ok{background:#f0fdf4;color:#16a34a;border:1px solid #86efac}
 /* AI warning block trong card — hiện ở mọi tab */
-.ai-card-warn{margin:6px 14px 2px;border-radius:10px;overflow:hidden;border:none}
-.ai-card-warn-row{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;font-size:12px;font-weight:600;line-height:1.4}
-.ai-card-warn-row.critical{background:linear-gradient(135deg,#fef2f2,#fee2e2);color:#991b1b;border:1.5px solid #fca5a5;border-radius:10px;margin-bottom:3px;animation:warn-pulse 2s infinite}
-.ai-card-warn-row.warning{background:linear-gradient(135deg,#fffbeb,#fef3c7);color:#92400e;border:1.5px solid #fde68a;border-radius:10px;margin-bottom:3px}
-.ai-card-warn-row.info{background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#1e40af;border:1.5px solid #bfdbfe;border-radius:10px;margin-bottom:3px}
-.ai-card-warn-ico{font-size:15px;flex-shrink:0;margin-top:1px}
+.ai-card-warn{margin:5px 14px 2px;border-radius:8px;overflow:hidden;border:none}
+.ai-card-warn-row{display:flex;align-items:flex-start;gap:6px;padding:5px 8px;font-size:11px;font-weight:600;line-height:1.3}
+.ai-card-warn-row.critical{background:linear-gradient(135deg,#fef2f2,#fee2e2);color:#991b1b;border:1px solid #fca5a5;border-radius:8px;margin-bottom:3px;animation:warn-pulse 2s infinite}
+.ai-card-warn-row.warning{background:linear-gradient(135deg,#fffbeb,#fef3c7);color:#92400e;border:1px solid #fde68a;border-radius:8px;margin-bottom:3px}
+.ai-card-warn-row.info{background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#1e40af;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:3px}
+.ai-card-warn-ico{font-size:12.5px;flex-shrink:0;margin-top:0}
 .ai-card-warn-txt{flex:1}
 .ai-card-warn-txt b{font-weight:800}
 @keyframes warn-pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.25)}60%{box-shadow:0 0 0 5px rgba(220,38,38,.0)}}
@@ -554,14 +554,14 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
 .progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--brand),var(--brand3));transition:width .5s}
 /* Progress inline trong card */
-.card-progress{padding:10px 14px;border-top:1px solid var(--border)}
-.card-progress-box{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px}
-.card-progress-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.card-progress{padding:7px 14px;border-top:1px solid var(--border)}
+.card-progress-box{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:9px}
+.card-progress-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .card-progress-info{flex:1;min-width:0}
-.card-progress-lbl{font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
-.card-progress-val{font-size:19px;font-weight:800;line-height:1.15;display:flex;align-items:baseline;gap:4px}
-.card-progress-val small{font-size:12.5px;font-weight:600;color:var(--text3)}
-.card-progress-remain{flex-shrink:0;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:20px;text-align:center;white-space:nowrap}
+.card-progress-lbl{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:1px}
+.card-progress-val{font-size:14px;font-weight:800;line-height:1.1;display:flex;align-items:baseline;gap:3px}
+.card-progress-val small{font-size:10.5px;font-weight:600;color:var(--text3)}
+.card-progress-remain{flex-shrink:0;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;text-align:center;white-space:nowrap}
 /* Khối RIÊNG: Mã nguyên liệu đầu vào (tách khỏi Tiến độ sản xuất) */
 .card-mat-sec{padding:8px 14px;border-top:1px solid var(--border);background:linear-gradient(135deg,#faf5ff,#f3e8ff);display:flex;flex-direction:column;gap:6px}
 .card-mat-sec-lbl{font-size:11.5px;font-weight:700;color:#7e22ce;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:4px}
@@ -2180,8 +2180,8 @@ function dashMiniCard(o, onClick){
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text4);margin-bottom:2px"><span>Tiến độ</span><span style="font-weight:700;color:var(--brand)">${pct}%</span></div>
       <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--green-m));border-radius:2px"></div></div>
     </div>`:''}
-    ${topWarn?`<div class="ai-warn ${topWarn.level}" style="margin-top:4px;font-size:10px">${topWarn.msg}</div>`:''}
-    ${runTime&&!topWarn?`<div class="ai-warn ok" style="margin-top:4px;font-size:10px">⚙️ Đang chạy ${runTime}</div>`:''}
+    ${topWarn?`<div class="ai-warn ${topWarn.level}" style="margin-top:3px;font-size:9px">${topWarn.msg}</div>`:''}
+    ${runTime&&!topWarn?`<div class="ai-warn ok" style="margin-top:3px;font-size:9px">⚙️ Đang chạy ${runTime}</div>`:''}
     ${timeStr?`<div class="dash-mini-time" style="margin-top:3px">${timeIcon} ${timeStr}</div>`:''}
   </div>`;
 }
@@ -2551,7 +2551,7 @@ function ddNewCard(o){
         <span class="dd-new-tag" style="background:#f0fdf4;border:1px solid #86efac;color:#166534">⚖️${o.kg||0}kg</span>
         <span class="badge ${si.cls}" style="font-size:9px;padding:1px 6px;border-radius:10px">${si.label}</span>
       </div>
-      ${topW?`<div style="margin-top:4px;font-size:10.5px;font-weight:700;color:${topW.level==='red'?'#dc2626':'#b45309'};background:${topW.level==='red'?'#fee2e2':'#fef3c7'};padding:2px 7px;border-radius:5px;display:inline-block">${topW.msg}</div>`:''}
+      ${topW?`<div style="margin-top:3px;font-size:9.5px;font-weight:700;color:${topW.level==='red'?'#dc2626':'#b45309'};background:${topW.level==='red'?'#fee2e2':'#fef3c7'};padding:2px 6px;border-radius:5px;display:inline-block">${topW.msg}</div>`:''}
       ${renderStageBadge(o)}
       <div class="dd-new-time">🕐 ${ageStr}${o.po?' · PO: '+o.po:''}</div>
     </div>
@@ -2607,7 +2607,7 @@ function ddPriCard(o, rank){
       </div>`:''}
 
       <!-- AI warnings -->
-      ${ai.warnings.length?`<div style="margin-top:5px;display:flex;flex-direction:column;gap:3px">${ai.warnings.map(w=>`<div style="font-size:10.5px;font-weight:700;color:${w.level==='red'?'#dc2626':'#b45309'};background:${w.level==='red'?'#fee2e2':'#fef3c7'};padding:3px 8px;border-radius:5px">${w.level==='red'?'🚨':'⚠️'} ${w.msg}</div>`).join('')}</div>`:''}
+      ${ai.warnings.length?`<div style="margin-top:4px;display:flex;flex-direction:column;gap:2px">${ai.warnings.map(w=>`<div style="font-size:9.5px;font-weight:700;color:${w.level==='red'?'#dc2626':'#b45309'};background:${w.level==='red'?'#fee2e2':'#fef3c7'};padding:2px 7px;border-radius:5px">${w.level==='red'?'🚨':'⚠️'} ${w.msg}</div>`).join('')}</div>`:''}
 
       <!-- Ghi chú -->
       ${o.note?`<div style="margin-top:5px;padding:5px 9px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-left:3px solid #fbbf24;border-radius:0 6px 6px 0;font-size:12px;font-weight:600;color:#92400e;display:flex;align-items:flex-start;gap:5px"><span style="flex-shrink:0">📝</span><span>${o.note}</span></div>`:''}
@@ -4085,9 +4085,9 @@ function renderProgressBar(o){
       </div>
       <div class="card-progress-remain" style="background:${remainBg};color:${remainColor}">${isDone?'✅ Đã đủ':'Còn '+remain+' thanh'}</div>
     </div>
-    ${o.progressNote?`<div style="margin-top:6px;padding:7px 10px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-left:3px solid var(--brand);border-radius:0 7px 7px 0;display:flex;align-items:flex-start;gap:6px">
-      <span style="font-size:14px;flex-shrink:0">📋</span>
-      <span style="font-size:12.5px;font-weight:700;color:#1e3a8a;line-height:1.5">${o.progressNote}</span>
+    ${o.progressNote?`<div style="margin-top:5px;padding:5px 8px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-left:3px solid var(--brand);border-radius:0 6px 6px 0;display:flex;align-items:flex-start;gap:5px">
+      <span style="font-size:11px;flex-shrink:0">📋</span>
+      <span style="font-size:10.5px;font-weight:700;color:#1e3a8a;line-height:1.4">${o.progressNote}</span>
     </div>`:''}
   </div>`;
 }

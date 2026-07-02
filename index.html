@@ -203,6 +203,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .ai-card-warn-txt{flex:1}
 .ai-card-warn-txt b{font-weight:800}
 @keyframes warn-pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.25)}60%{box-shadow:0 0 0 5px rgba(220,38,38,.0)}}
+@keyframes card-flash{0%{box-shadow:0 0 0 0 rgba(37,99,235,.55)}70%{box-shadow:0 0 0 10px rgba(37,99,235,0)}100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}}
+.flash-highlight{animation:card-flash 1s ease-out 2}
 /* AI Banner */
 .ai-banner{background:linear-gradient(135deg,#0f172a,#1e3a8a);border-radius:12px;padding:12px 14px;color:#fff;margin-bottom:4px}
 .ai-banner-title{font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;margin-bottom:8px;opacity:.9}
@@ -2092,7 +2094,7 @@ function orderCard(o, showStatus=true){
   const canEdit = isAdmin();
   const canStatus = isStaff() && showStatus;
 
-  return `<div class="card" style="border-left:4px solid ${pc}">
+  return `<div class="card" data-order-id="${o.id}" style="border-left:4px solid ${pc}">
     <div class="card-header">
       <span class="badge ${si.cls}">${si.label}</span>
       <span class="spec-tag pri" style="background:${pc}20;color:${pc}">${o.priority||'—'}</span>
@@ -2167,7 +2169,7 @@ function dashMiniCard(o, onClick){
     runTime=h>0?`${h}g${m}p`:`${m}p`;
   }
 
-  return `<div class="dash-mini-card" onclick="${onClick}" style="border-left:3px solid ${topWarn?.level==='red'?'#dc2626':topWarn?.level==='amber'?'#f59e0b':pc}">
+  return `<div class="dash-mini-card" data-order-id="${o.id}" onclick="${onClick}" style="border-left:3px solid ${topWarn?.level==='red'?'#dc2626':topWarn?.level==='amber'?'#f59e0b':pc}">
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
       <span style="font-size:13px;font-weight:800;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.customer||'—'}</span>
       <span style="font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:20px;background:${pc}20;color:${pc};white-space:nowrap">${o.priority||''}</span>
@@ -2195,7 +2197,7 @@ function dashMiniCardNew(o){
   const ageStr = age<60?age+'p':age<1440?Math.floor(age/60)+'g':Math.floor(age/1440)+'ngày';
   const pct = o.qty&&o.doneQty ? Math.min(100,Math.round(o.doneQty/o.qty*100)) : 0;
   const borderC = s==='done'?'#10b981':s==='running'?'#3b82f6':'#f59e0b';
-  return `<div class="new-card" style="border-left:3px solid ${borderC}">
+  return `<div class="new-card" data-order-id="${o.id}" style="border-left:3px solid ${borderC}">
     <div class="new-card-top">
       <span class="new-card-cust">${o.customer||'—'}</span>
       <span class="badge ${si.cls}" style="font-size:9px;padding:1px 6px;border-radius:10px">${si.label}</span>
@@ -2537,7 +2539,7 @@ function ddNewCard(o){
       ? Math.floor(age/3600000)+'g trước'
       : Math.floor(age/86400000)+'ngày trước';
   const isNew = age < 3600000;
-  return `<div class="dd-new-card" onclick="goTab('keHoach')">
+  return `<div class="dd-new-card" data-order-id="${o.id}" onclick="goTab('keHoach')">
     <div class="dd-new-dot" style="background:${s==='running'?'#3b82f6':s==='done'?'#10b981':'#f59e0b'};${s==='running'?'animation:pulse 1.5s infinite':''}"></div>
     <div class="dd-new-body">
       <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
@@ -2571,7 +2573,7 @@ function ddPriCard(o, rank){
   const canEdit = isAdmin(), canStatus = isStaff();
   const sp = specStr(o), ql = qtyLabel(o);
   const bgB = ai.urgencyTag==='critical'?'border-left:3px solid #dc2626':ai.urgencyTag==='warning'?'border-left:3px solid #f59e0b':`border-left:3px solid ${pc}`;
-  return `<div class="dd-pri-card" style="${bgB}">
+  return `<div class="dd-pri-card" data-order-id="${o.id}" style="${bgB}">
     <!-- Header: số thứ tự + khách + priority + status -->
     <div class="dd-pri-num" style="background:${pc}">${rank}</div>
     <div class="dd-pri-body">
@@ -2732,7 +2734,7 @@ function orderCardKH(o, seq){
   const canEdit=isAdmin();
   const si=statusInfo(s);
 
-  return `<div class="card" style="border-left:4px solid ${pc}">
+  return `<div class="card" data-order-id="${o.id}" style="border-left:4px solid ${pc}">
     <div class="card-header">
       ${seq!=null?`<span style="width:26px;height:26px;border-radius:50%;background:${pc};color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${seq}</span>`:''}
       <span class="badge ${si.cls}">${si.label}</span>
@@ -4037,9 +4039,23 @@ function saveProgress(){
   o.progressNote = note;
   log('Cập nhật tiến độ',`${o.customer} · ${o.priority||''} · Đã chạy: ${doneQty}/${o.qty||0} thanh`,_progressOrderId,{doneQty:old.doneQty,matCodes:old.matCodes,note:o.progressNote},{doneQty,matCodes:[..._pmMats],note});
   closeModal('progressModal');
+  const savedId = _progressOrderId;
   renderTab(currentTab);
+  goToOrderCard(savedId);
   showToast(`✅ Đã lưu: ${doneQty}/${o.qty||0} thanh`);
   saveOrders();
+}
+
+// Cuộn đúng tới thẻ đơn vừa cập nhật (thay vì nhảy lên đầu trang) và làm nổi bật để dễ nhận ra
+function goToOrderCard(orderId){
+  if(!orderId) return;
+  setTimeout(()=>{
+    const el = document.querySelector(`[data-order-id="${orderId}"]`);
+    if(!el) return;
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.classList.add('flash-highlight');
+    setTimeout(()=>el.classList.remove('flash-highlight'), 2000);
+  }, 60);
 }
 
 // ════ AI WARNING BLOCK — hiện trong mọi card mọi tab ═══════
@@ -4140,6 +4156,7 @@ function setStage(id, stage){
   o.stage = stage;
   log('Cập nhật công đoạn', `${o.customer||''} · ${STAGE_LABEL[stage]||stage}`, id, {stage:old||''}, {stage});
   renderTab(currentTab);
+  goToOrderCard(id);
   showToast(`🏭 Công đoạn: ${STAGE_LABEL[stage]||stage}`);
   saveOrders();
 }
